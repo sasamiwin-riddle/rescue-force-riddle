@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "S.R.F. 空間救助ミッション",
-  description: "Web入力型謎解きアドベンチャー",
+  title: "ライクアルファベット",
+  description: "WEB型謎解きゲーム",
 };
 
 export default function RootLayout({
