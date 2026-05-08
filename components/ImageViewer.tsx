@@ -12,19 +12,19 @@ export function ImageViewer({ step, onImageClick }: ImageViewerProps) {
   let imageSrc = "";
 
   switch (step) {
-    case 'step1':
+    case 'step1_1':
       imageSrc = "/assets/riddle_step1.png";
       break;
-    case 'step2':
+    case 'step2_1':
       imageSrc = "/assets/riddle_step2.png";
       break;
-    case 'step3':
+    case 'step3_1':
       imageSrc = "/assets/riddle_step3.png";
       break;
-    case 'step4':
+    case 'step4_1':
       imageSrc = "/assets/riddle_step4.png";
       break;
-    case 'last':
+    case 'last_2':
       imageSrc = "/assets/riddle_steplast.png";
       break;
     default:

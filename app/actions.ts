@@ -1,6 +1,6 @@
 "use server";
 
-export type Step = 'intro' | 'step1' | 'manual' | 'step1_2' | 'step2' | 'step3' | 'step4' | 'last' | 'clear';
+export type Step = 'intro' | 'step1_1' | 'manual' | 'step1_2' | 'step2_1' | 'step2_2' | 'step3_1' | 'step3_2' | 'step4_1' | 'step4_2' | 'last_1' | 'last_2' | 'situation_review' | 'clear';
 
 export interface ActionResponse {
   success: boolean;
@@ -18,12 +18,13 @@ function normalizeString(str: string): string {
     .toLowerCase();
 }
 
-// Step 1-3: 小謎の答え（現状はプレースホルダーとして各ステップ固定の答えを設定）
+// Riddle parts: stepX_1
 const RIDDLE_ANSWERS: Record<string, RegExp> = {
-  'step1': /^(s|S|ｓ|Ｓ)$/, // TODO: 実際の小謎の答えに差し替え
-  'step2': /^(12|１２)$/,
-  'step3': /^(h|H|ｈ|Ｈ)$/,
-  'step4': /^(l|L|ｌ|Ｌ|える|エル)$/,
+  'step1_1': /^(s|S|ｓ|Ｓ)$/,
+  'step2_1': /^(12|１２)$/,
+  'step3_1': /^(h|H|ｈ|Ｈ)$/,
+  'step4_1': /^(l|L|ｌ|Ｌ|える|エル)$/,
+  'last_2': /^(180)$/, // 仮の正解。ユーザーがriddle_steplast.pngに合わせて変更可能
 };
 
 export async function validateRiddle(answer: string, currentStep: Step): Promise<ActionResponse> {
@@ -31,12 +32,31 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
   const pattern = RIDDLE_ANSWERS[currentStep];
 
   if (pattern && pattern.test(normalized)) {
-    return { success: true, message: '正解です。該当するアイテムを選択してください。', isPhase1Complete: true };
+    // Determine the next choice step
+    let nextStep: Step | undefined;
+    if (currentStep === 'step1_1') nextStep = 'step1_2';
+    else if (currentStep === 'step2_1') nextStep = 'step2_2';
+    else if (currentStep === 'step3_1') nextStep = 'step3_2';
+    else if (currentStep === 'step4_1') nextStep = 'step4_2';
+    else if (currentStep === 'last_2') {
+      return {
+        success: true,
+        message: 'ロック解除。自由入力機能を使用可能。',
+        isPhase1Complete: true,
+      };
+    }
+
+    return {
+      success: true,
+      message: '正解です。該当するアイテムを選択してください。',
+      isPhase1Complete: true,
+      nextStep
+    };
   }
 
   // デバッグ用に "test" で必ず通るようにしておく（後で消す）
   if (normalized === 'test') {
-    return { success: true, message: '[DEBUG] 正解です。該当するアイテムを選択してください。', isPhase1Complete: true };
+    return { success: true, message: '[DEBUG] 正解です。', isPhase1Complete: true };
   }
 
   return { success: false, message: '不正解です。もう一度画像を確認してください。', errorType: 'wrong' };
@@ -46,47 +66,54 @@ export async function validateItemSelection(selection: string | any, currentStep
   switch (currentStep) {
     case 'step1_2':
       if (selection === 'S字フック') {
-        return { success: true, message: '「s」の入力確認。次のステップへ移行します。', nextStep: 'step2' };
+        return { success: true, message: '「s」の入力確認。次のステップへ移行します。', nextStep: 'step2_1' };
       }
       break;
 
-    case 'step2':
+    case 'step2_2':
       if (selection === 'ドライヤー') {
-        return { success: true, message: '「L」の入力確認。', nextStep: 'step3' };
+        return { success: true, message: '「L」の入力確認。', nextStep: 'step3_1' };
       }
       break;
 
-    case 'step3':
+    case 'step3_2':
       if (selection === 'イス') {
-        return { success: true, message: '「h」の入力確認。', nextStep: 'step4' };
+        return { success: true, message: '「h」の入力確認。', nextStep: 'step4_1' };
       }
       break;
 
-    case 'step4':
-      // selection is expected to be an object: { item: string, position: string, action: string }
+    case 'step4_2':
+      // selection is expected to be an object: { item: string, position: string, action: string, view: string }
       if (typeof selection === 'object' && selection !== null) {
-        if (selection.item === '冷蔵庫' && selection.position === '下' && selection.action === '開く') {
+        if (
+          selection.item === '冷蔵庫' &&
+          (selection.position === '下' || selection.position === '上') &&
+          selection.action === '開く' &&
+          selection.view === '横'
+        ) {
           return {
             success: true,
             message: '実物の1段式の冷蔵庫が確認されました。次のステップへ移行します。',
-            nextStep: 'last',
+            nextStep: 'last_1',
             errorType: 'fridge_1door' // UI側で1段式冷蔵庫の画像を表示するためのフラグとして利用
           };
         }
       }
       break;
 
-    case 'last':
-      // Last Stepは2つのフェーズがある
+    case 'last_1':
       // フェーズ1: 強制ドライヤー選択
       if (selection === 'ドライヤー_forced') {
         return {
           success: false,
-          message: 'エラー：対象アイテムはT字型です。「L」として判定できません。',
-          errorType: 'dryer_t'
+          message: 'エラー：対象アイテムは「T」です。「L」として判定できません。',
+          errorType: 'dryer_t',
+          nextStep: 'last_2'
         };
       }
+      break;
 
+    case 'last_2':
       // フェーズ2: テキスト入力 (4文字以内)
       if (typeof selection === 'string') {
         const normalized = normalizeString(selection);
