@@ -1,6 +1,6 @@
 "use server";
 
-export type Step = 'intro' | 'step1_1' | 'manual' | 'step1_2' | 'step2_1' | 'step2_2' | 'step3_1' | 'step3_2' | 'step4_1' | 'step4_2' | 'last_1' | 'last_2' | 'situation_review' | 'clear';
+export type Step = 'top' | 'intro' | 'step1_1' | 'manual' | 'step1_2' | 'step2_1' | 'step2_2' | 'step3_1' | 'step3_2' | 'step4_1' | 'step4_2' | 'last_1' | 'last_2' | 'situation_review' | 'clear';
 
 export interface ActionResponse {
   success: boolean;
@@ -24,7 +24,7 @@ const RIDDLE_ANSWERS: Record<string, RegExp> = {
   'step2_1': /^(12|１２)$/,
   'step3_1': /^(h|H|ｈ|Ｈ)$/,
   'step4_1': /^(l|L|ｌ|Ｌ|える|エル)$/,
-  'last_2': /^(180)$/, // 仮の正解。ユーザーがriddle_steplast.pngに合わせて変更可能
+  'last_2': /^(缶|かん|カン)$/,
 };
 
 export async function validateRiddle(answer: string, currentStep: Step): Promise<ActionResponse> {
@@ -41,7 +41,7 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
     else if (currentStep === 'last_2') {
       return {
         success: true,
-        message: 'ロック解除。自由入力機能を使用可能。',
+        message: '残り誤答回数は0回です。「L」のシルエットに最も近いアイテムを回答してください',
         isPhase1Complete: true,
       };
     }
@@ -118,7 +118,7 @@ export async function validateItemSelection(selection: string | any, currentStep
       if (typeof selection === 'string') {
         const normalized = normalizeString(selection);
         if (normalized.length <= 4 && /^(座椅子|ざいす|ザイス)$/.test(normalized)) {
-          return { success: true, message: '対象を完全にロックしました。転送を開始します...救出完了！', nextStep: 'clear' };
+          return { success: true, message: '全ての謎が解明され、閉鎖空間を掌握しました。救出対象者の転送を開始します...救出完了！', nextStep: 'clear' };
         }
       }
       break;

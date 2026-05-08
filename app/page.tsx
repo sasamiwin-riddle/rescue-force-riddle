@@ -5,8 +5,10 @@ import { Step, validateRiddle, validateItemSelection, ActionResponse } from './a
 import { MessageDialog } from '../components/MessageDialog';
 import { ImageViewer } from '../components/ImageViewer';
 import { InputField } from '../components/InputField';
+import { HintDialog } from '../components/HintDialog';
+import { HINTS } from './hints';
 
-const ALL_STEPS: Step[] = ['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last', 'clear'];
+const ALL_STEPS: Step[] = ['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2', 'clear'];
 
 interface StepState {
   messages: { sender: '救助システム' | '先輩'; text: string; image?: string }[];
@@ -20,16 +22,20 @@ interface StepState {
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Step>('intro');
   const [unlockedTabs, setUnlockedTabs] = useState<Step[]>(['intro']);
+  const [gameStarted, setGameStarted] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
+  const [showHints, setShowHints] = useState(false);
   const [manual2Unlocked, setManual2Unlocked] = useState(false);
   const [lastRiddleRevealed, setLastRiddleRevealed] = useState(false);
   const [reviewAnswers, setReviewAnswers] = useState<Record<string, string>>({
     who: '',
     where: '',
     miss: '',
-    item: ''
+    item: '',
+    q5: ''
   });
+  const [showQ5, setShowQ5] = useState(false);
 
   const [stepStates, setStepStates] = useState<Record<Step, StepState>>({
     intro: {
@@ -52,16 +58,28 @@ export default function Home() {
     step4_2: { messages: [{ sender: '先輩', text: 'また「L」か。二つもドライヤーがあるか分からない。今追加された機能の「一旦転送」を使う方が良さげだな。マニュアルを確認して、最後のアイテムはどうすれば良いか考えてくれ。' }], phase1Complete: true, isCleared: false },
     last_1: { messages: [{ sender: '先輩', text: 'ここまで160分。いよいよ最後の山場だ。' }, { sender: '先輩', text: '私の推測だと答えではないと思うが、念のため可能性を潰しておきたい。「ドライヤー」を再度選択してくれ。' }], phase1Complete: true, isCleared: false },
     last_2: {
-      messages: [{ sender: '先輩', text: '何を選択すれば良いか、私はすでに検討がついているが、まだ時間はある。救助システムから出力された謎に少し書き加えたものだ。これを解けば、おそらく答えの推測がつくだろう。' },
+      messages: [{ sender: '先輩', text: 'マニュアルの2ページ目は確認できたか？' },
+      { sender: '先輩', text: '何のアイテムが良いか、私はすでに検討がついているが、まだ時間はある。この謎は救助システムから出力された謎に少し書き加えたものだ。私のこの謎を解けば、私の考えが伝わるだろう。' },
       { sender: '先輩', text: '今すぐこの謎を見ても良いし、自力で考えてから確認のために解いても良い。君の好きなやり方で考えてくれ' },
-      { sender: '先輩', text: 'もし状況の整理がしたい場合は「状況整理がしたい」と言ってくれ。' }], phase1Complete: false, isCleared: false
+      { sender: '先輩', text: 'もし状況の整理がしたい場合は「状況整理を行う」と言ってくれ。' }], phase1Complete: false, isCleared: false
     },
     situation_review: { messages: [], phase1Complete: false, isCleared: false },
     clear: { messages: [{ sender: '救助システム', text: 'MISSION COMPLETE. 対象者の救出に成功しました。' }], phase1Complete: true, isCleared: true },
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const lastActiveTab = useRef<Step>(activeTab);
+
+  useEffect(() => {
+    if (lastActiveTab.current !== activeTab) {
+      chatContainerRef.current?.scrollTo({ top: 0, behavior: 'auto' });
+      lastActiveTab.current = activeTab;
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeTab, stepStates[activeTab]?.messages]);
 
   useEffect(() => {
     if (!tabsContainerRef.current) return;
@@ -83,9 +101,6 @@ export default function Home() {
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [stepStates[activeTab]?.messages]);
 
   const addMessage = (step: Step, sender: '救助システム' | '先輩', text: string, image?: string) => {
     setStepStates(prev => ({
@@ -105,16 +120,10 @@ export default function Home() {
   };
 
   const handleHelp = () => {
-    if (stepStates[activeTab].hasUsedHelp) return;
-
-    let helpText = "ちょっと待ってね、情報を整理するよ。";
-    if (activeTab === 'step1_1') helpText = "赤色と青色の四角が突然出てきたな";
-    else if (activeTab === 'step1_2') helpText = "S字フックってそのままSだよね。";
-    else if (activeTab === 'step2_1') helpText = "おそらく数字になりそうだ";
-    else if (activeTab === 'step3_2') helpText = "hといえば、横から見ると見えてくるな";
-
-    addMessage(activeTab, '先輩', helpText);
-    updateStepState(activeTab, { hasUsedHelp: true });
+    setShowHints(true);
+    if (!stepStates[activeTab].hasUsedHelp) {
+      updateStepState(activeTab, { hasUsedHelp: true });
+    }
   };
 
   const handleRiddleSubmit = async (answer: string) => {
@@ -124,22 +133,32 @@ export default function Home() {
         // 正解時のみエコーと成功メッセージを表示
         addMessage(activeTab, '救助システム', `> 謎の回答: ${answer}`);
         addMessage(activeTab, '救助システム', `SUCCESS: ${res.message}`);
-        updateStepState(activeTab, { isCleared: true, nextStep: res.nextStep, errorType: undefined });
+        
+        if (activeTab === 'last_2') {
+          addMessage(activeTab, '先輩', 'これまで出たイラストのアイテムが答えだが、複数あったり形が違う場合もある。聞いた時に一発でこれと分かる単語で回答するんだ');
+        }
 
-        if (res.nextStep && !unlockedTabs.includes(res.nextStep)) {
-          setUnlockedTabs(prev => [...prev, res.nextStep!]);
-
-          if (activeTab === 'step1_1') {
-            // Step 1_1 正解時は Manual も同時にアンロック
-            setUnlockedTabs(prev => {
-              const next = [...prev];
-              if (!next.includes('manual')) next.push('manual');
-              if (!next.includes('step1_2')) next.push('step1_2');
-              return next;
-            });
-            updateStepState('step1_1', { nextStep: 'manual' });
+        const updates: Partial<StepState> = { errorType: undefined };
+        if (res.isPhase1Complete) updates.phase1Complete = true;
+        if (res.nextStep) {
+          updates.isCleared = true;
+          updates.nextStep = res.nextStep;
+          if (!unlockedTabs.includes(res.nextStep)) {
+            setUnlockedTabs(prev => [...prev, res.nextStep!]);
           }
         }
+
+        // Step 1_1 特殊処理: Manual と Step 1_2 も同時にアンロック
+        if (activeTab === 'step1_1' && res.success) {
+          setUnlockedTabs(prev => {
+            const next = [...prev];
+            if (!next.includes('manual')) next.push('manual');
+            if (!next.includes('step1_2')) next.push('step1_2');
+            return next;
+          });
+        }
+
+        updateStepState(activeTab, updates);
       } else {
         // 不正解時はチャットに残さず、先輩からのポップアップを表示
         setPopupMessage('先輩：もう一度よく考えて');
@@ -204,8 +223,11 @@ export default function Home() {
         addMessage(activeTab, '先輩', 'LというよりかT字型ドライヤーだな。だが、これで確率は高まった。');
         addMessage(activeTab, '先輩', '2回失敗したことで、自由入力機能が解放された。ん？おっとすまない、マニュアルの2ページ目の連携が漏れていた。マニュアルを再度確認してみてくれ');
         setManual2Unlocked(true);
-        // Last Stepのフェーズ1完了扱いにしてフェーズ2(テキスト入力)へ進める
-        updateStepState(activeTab, { phase1Complete: true });
+        if (res.nextStep && !unlockedTabs.includes(res.nextStep)) {
+          setUnlockedTabs(prev => [...prev, res.nextStep!]);
+        }
+        // Last Step的フェーズ1完了扱いにしてフェーズ2(テキスト入力)へ進める
+        updateStepState(activeTab, { phase1Complete: true, isCleared: true, nextStep: res.nextStep });
       } else {
         // 通常の不正解時はポップアップ
         setPopupMessage('先輩：もう一度よく考えて');
@@ -218,7 +240,7 @@ export default function Home() {
       ref={tabsContainerRef}
       className="flex w-full overflow-x-auto border-b border-neutral-700 bg-neutral-900 sticky top-0 z-10 no-scrollbar"
     >
-      {['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2']
+      {['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2', 'situation_review']
         .filter(step => unlockedTabs.includes(step as Step))
         .map((stepStr, idx) => {
           const step = stepStr as Step;
@@ -259,7 +281,7 @@ export default function Home() {
       <div className="flex-1 flex flex-col w-full min-h-0">
 
         {/* Riddle Image Section */}
-        {activeTab.endsWith('_1') && (
+        {(activeTab.endsWith('_1') || activeTab === 'last_2') && activeTab !== 'last_1' && (
           <div className="p-4 bg-neutral-950 flex justify-center border-b border-neutral-800">
             <div className="w-full max-w-sm aspect-video bg-neutral-800 rounded flex items-center justify-center relative overflow-hidden">
               {activeTab === 'last_2' && !lastRiddleRevealed ? (
@@ -267,8 +289,8 @@ export default function Home() {
                   onClick={() => setLastRiddleRevealed(true)}
                   className="w-full h-full flex flex-col items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-800 transition-colors group"
                 >
-                  <span className="text-cyan-400 font-bold tracking-widest text-sm group-hover:scale-110 transition-transform font-mono">TAP TO ANALYZE</span>
-                  <span className="text-[10px] text-neutral-500 uppercase font-sans">最後の謎を出力します</span>
+                  <span className="text-cyan-400 font-bold tracking-widest text-sm group-hover:scale-110 transition-transform font-mono">表示する</span>
+                  <span className="text-[10px] text-neutral-500 uppercase font-sans">タップして最後の謎を表示</span>
                 </button>
               ) : (
                 <ImageViewer step={activeTab} onImageClick={setExpandedImage} />
@@ -277,10 +299,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Chat / Terminal Area */}
-        {/* Chat / Terminal Area */}
         {activeTab !== 'manual' && activeTab !== 'situation_review' ? (
-          <div className="flex-1 overflow-y-auto p-4 bg-black flex flex-col gap-2 relative">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 bg-black flex flex-col gap-2 relative">
             {state.messages.map((msg, idx) => (
               <MessageDialog key={idx} sender={msg.sender} text={msg.text} imageSrc={msg.image} onImageClick={setExpandedImage} />
             ))}
@@ -387,76 +407,98 @@ export default function Home() {
           <div className="flex-1 overflow-y-auto p-4 bg-neutral-950 font-sans">
             <div className="max-w-md mx-auto space-y-6">
               <div className="text-center space-y-2">
-                <h3 className="text-cyan-400 font-bold text-lg tracking-tighter uppercase italic">Situation Analysis</h3>
-                <p className="text-neutral-500 text-[10px] tracking-widest">現在の情報を整理し、最終結論を導き出せ</p>
+                <h3 className="text-cyan-400 font-bold text-lg tracking-tighter uppercase italic">状況整理シート</h3>
               </div>
 
               <div className="space-y-8 bg-neutral-900/50 p-6 rounded-lg border border-cyan-900/30">
                 {/* 質問1 */}
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-300">1. 救助対象者の正体は <span className="text-cyan-400 font-bold">誰</span> か？</p>
+                  <p className="text-sm text-neutral-300">1. マニュアル2ページ目に記載の救助対象者以上の温度とは、だいたい何℃以上だろうか？</p>
                   <select
                     value={reviewAnswers.who}
                     onChange={(e) => setReviewAnswers(prev => ({ ...prev, who: e.target.value }))}
-                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.who === '女子高生' ? 'border-green-500 text-green-400' : reviewAnswers.who ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
+                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.who === '37' ? 'border-green-500 text-green-400' : reviewAnswers.who ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
                   >
                     <option value="">選択してください</option>
-                    <option value="警察官">警察官</option>
-                    <option value="女子高生">女子高生</option>
-                    <option value="先輩">先輩</option>
+                    <option value="35">35℃以上</option>
+                    <option value="36">36℃以上</option>
+                    <option value="37">37℃以上</option>
                   </select>
                 </div>
 
                 {/* 質問2 */}
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-300">2. 対象者は現在 <span className="text-cyan-400 font-bold">どんな状況</span> にあるか？</p>
+                  <p className="text-sm text-neutral-300">2. なぜ最初からハッキング液の温度が高くなっているのか？</p>
                   <select
                     value={reviewAnswers.where}
                     onChange={(e) => setReviewAnswers(prev => ({ ...prev, where: e.target.value }))}
-                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.where === '閉鎖空間' ? 'border-green-500 text-green-400' : reviewAnswers.where ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
+                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.where === 'お風呂' ? 'border-green-500 text-green-400' : reviewAnswers.where ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
                   >
                     <option value="">選択してください</option>
-                    <option value="自由の身">自由の身</option>
-                    <option value="閉鎖空間">閉鎖空間に閉じ込められている</option>
-                    <option value="散歩中">散歩中</option>
+                    <option value="お風呂">お風呂だったから</option>
+                    <option value="ポット">ポットだったから</option>
+                    <option value="マグマ">マグマだったから</option>
                   </select>
                 </div>
 
                 {/* 質問3 */}
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-300">3. これまで <span className="text-cyan-400 font-bold">足りなかった情報</span> は何か？</p>
+                  <p className="text-sm text-neutral-300">3. 外気温は何℃か？</p>
                   <select
                     value={reviewAnswers.miss}
                     onChange={(e) => setReviewAnswers(prev => ({ ...prev, miss: e.target.value }))}
-                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.miss === 'マニュアル2' ? 'border-green-500 text-green-400' : reviewAnswers.miss ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
+                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.miss === '8' ? 'border-green-500 text-green-400' : reviewAnswers.miss ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
                   >
                     <option value="">選択してください</option>
-                    <option value="空腹度">空腹度</option>
-                    <option value="マニュアル2">マニュアルの2ページ目</option>
-                    <option value="体温">体温</option>
+                    <option value="8">8℃</option>
+                    <option value="15">15℃</option>
+                    <option value="25">25℃</option>
                   </select>
                 </div>
 
                 {/* 質問4 */}
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-300">4. 最終的に導き出される <span className="text-cyan-400 font-bold">答え</span> は何か？</p>
+                  <p className="text-sm text-neutral-300">4. なぜお湯が冷めないのか？</p>
                   <select
                     value={reviewAnswers.item}
                     onChange={(e) => setReviewAnswers(prev => ({ ...prev, item: e.target.value }))}
-                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.item === '座椅子' ? 'border-green-500 text-green-400' : reviewAnswers.item ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
+                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.item === '元々' ? 'border-green-500 text-green-400' : reviewAnswers.item ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
                   >
                     <option value="">選択してください</option>
-                    <option value="ドライヤー">ドライヤー</option>
-                    <option value="冷蔵庫">冷蔵庫</option>
-                    <option value="座椅子">座椅子</option>
+                    <option value="蓋">蓋を一度も取っていないから</option>
+                    <option value="追い炊き">追い炊きボタンを押し続けているから</option>
+                    <option value="元々">元々温度を保つ設備になっているから</option>
                   </select>
                 </div>
+
+                {!showQ5 ? (
+                  <button
+                    onClick={() => setShowQ5(true)}
+                    className="w-full bg-neutral-800 border border-cyan-900 text-cyan-400 py-3 rounded font-bold hover:bg-neutral-700 transition-colors uppercase tracking-widest text-xs"
+                  >
+                    革新的な問いを表示する
+                  </button>
+                ) : (
+                  <div className="space-y-3 animate-in slide-in-from-top-2 duration-500">
+                    <p className="text-sm text-neutral-300">5. ハッキング液は何に溶けていますか？</p>
+                    <select
+                      value={reviewAnswers.q5}
+                      onChange={(e) => setReviewAnswers(prev => ({ ...prev, q5: e.target.value }))}
+                      className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.q5 === '温泉' ? 'border-green-500 text-green-400' : reviewAnswers.q5 ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
+                    >
+                      <option value="">選択してください</option>
+                      <option value="温泉">温泉</option>
+                      <option value="温泉">温泉</option>
+                      <option value="温泉">温泉</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
-              {reviewAnswers.who === '女子高生' && reviewAnswers.where === '閉鎖空間' && reviewAnswers.miss === 'マニュアル2' && reviewAnswers.item === '座椅子' && (
+              {reviewAnswers.who === '37' && reviewAnswers.where === 'お風呂' && reviewAnswers.miss === '8' && reviewAnswers.item === '元々' && reviewAnswers.q5 === '温泉' && (
                 <div className="animate-in zoom-in duration-500 bg-green-900/20 border border-green-500/50 p-4 rounded-lg text-center space-y-3">
-                  <p className="text-green-400 font-bold tracking-widest text-sm">ANALYSIS COMPLETE</p>
-                  <p className="text-xs text-neutral-300">全ての矛盾が解消されました。LAST 2に戻り、導き出した答えを入力してください。</p>
+                  <p className="text-green-400 font-bold tracking-widest text-sm">状況整理完了</p>
+                  <p className="text-xs text-neutral-300">LAST 2に戻り、答えを導いてください。</p>
                   <button
                     onClick={() => setActiveTab('last_2')}
                     className="w-full bg-green-600 text-white py-2 rounded text-sm font-bold hover:bg-green-500 transition-colors"
@@ -477,8 +519,8 @@ export default function Home() {
                 <div className="flex justify-end items-end mb-2">
                   <button
                     onClick={handleHelp}
-                    disabled={state.hasUsedHelp}
-                    className="text-xs bg-neutral-800 border border-neutral-600 text-neutral-300 px-2 py-1 rounded hover:bg-neutral-700 disabled:opacity-50"
+                    disabled={!HINTS[activeTab] || HINTS[activeTab].length === 0}
+                    className="text-xs bg-neutral-800 border border-neutral-600 text-neutral-300 px-2 py-1 rounded hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     先輩HELP
                   </button>
@@ -509,7 +551,7 @@ export default function Home() {
                 )}
 
                 {/* フェーズ2: アイテム選択 (stepX_2) */}
-                {activeTab.endsWith('_2') && activeTab !== 'step4_2' && (
+                {activeTab.endsWith('_2') && activeTab !== 'last_2' && (
                   <div className="flex gap-2">
                     <select id={`select-${activeTab}`} className="flex-1 bg-black text-cyan-300 border border-cyan-800 rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-cyan-400">
                       <option value="">アイテムを選択</option>
@@ -551,15 +593,17 @@ export default function Home() {
                         </>
                       )}
                     </select>
-                    <button
-                      onClick={() => {
-                        const val = (document.getElementById(`select-${activeTab}`) as HTMLSelectElement).value;
-                        if (val) handleItemSelect(val);
-                      }}
-                      className="bg-cyan-900 text-cyan-100 px-4 py-2 rounded font-bold hover:bg-cyan-800"
-                    >
-                      送信
-                    </button>
+                    {activeTab !== 'step4_2' && (
+                      <button
+                        onClick={() => {
+                          const val = (document.getElementById(`select-${activeTab}`) as HTMLSelectElement).value;
+                          if (val) handleItemSelect(val);
+                        }}
+                        className="bg-cyan-900 text-cyan-100 px-4 py-2 rounded font-bold hover:bg-cyan-800"
+                      >
+                        送信
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -643,13 +687,13 @@ export default function Home() {
                       </button>
                     </div>
                     {!state.phase1Complete ? (
-                      <InputField onSubmit={handleRiddleSubmit} placeholder="最後の謎の答えを入力..." />
+                      <InputField onSubmit={handleRiddleSubmit} placeholder="LAST 2の謎の赤枠内に入るものを答えよ" />
                     ) : (
                       <div className="flex flex-col gap-2 p-2 border border-pink-900/30 bg-pink-900/5 rounded">
                         <p className="text-[10px] text-pink-400 font-bold uppercase tracking-tighter mb-1 font-sans">自由入力モード起動中</p>
                         <InputField
                           onSubmit={(val) => handleItemSelect(val)}
-                          placeholder="対象者への指示を入力 (4文字以内)..."
+                          placeholder="アナウンスしたい単語を入力 (4文字以内)..."
                           maxLength={4}
                         />
                       </div>
@@ -680,8 +724,45 @@ export default function Home() {
     );
   };
 
+  if (!gameStarted) {
+    return (
+      <main className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30">
+        <div className="flex-1 overflow-y-auto p-6 bg-neutral-950 flex flex-col items-center justify-center gap-8">
+          <div className="text-center space-y-4">
+            <h2 className="text-5xl font-bold text-cyan-400 tracking-tighter italic animate-in zoom-in duration-1000">
+              S.R.F.
+              <br />
+              <span className="text-2xl">SPATIAL RESCUE FORCE</span>
+            </h2>
+            <p className="text-neutral-500 text-xs tracking-widest uppercase">閉鎖空間救助隊：現場研修システム</p>
+          </div>
+
+          <div className="w-full max-w-sm space-y-4 bg-neutral-900/50 p-6 rounded-lg border border-cyan-900/30 font-sans">
+            <h3 className="text-cyan-400 font-bold text-sm border-b border-cyan-900 pb-2 mb-4 flex items-center gap-2">
+              <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+              注意事項
+            </h3>
+            <ul className="text-xs text-neutral-300 space-y-3 leading-relaxed list-disc pl-4">
+              <li>本システムは閉鎖空間内に閉じ込められた対象者の救出を目的としています。</li>
+              <li>救助には高い推察力と論理的思考が必要とされます。</li>
+              <li>システム内の情報は常に最新のものを確認してください。</li>
+              <li>想定救助時間は180分以内です。</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={() => setGameStarted(true)}
+            className="w-full max-w-sm bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(6,182,212,0.3)] uppercase tracking-[0.2em] text-sm"
+          >
+            研修を開始する
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="flex h-screen sm:h-svh flex-col items-center justify-between mx-auto w-full max-w-lg font-mono bg-neutral-950">
+    <main className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 max-w-2xl mx-auto border-x border-neutral-800">
       {/* Header */}
       <h1 className="text-xl font-bold text-cyan-400 p-3 text-center tracking-widest border-b border-cyan-900 w-full bg-black shrink-0">
         ライクアルファベット
@@ -692,9 +773,24 @@ export default function Home() {
 
       {/* Main Content Area */}
       {activeTab === 'clear' ? (
-        <div className="flex-1 flex items-center justify-center p-8 text-center flex-col gap-4">
-          <h2 className="text-3xl text-cyan-400 font-bold">MISSION COMPLETE</h2>
-          <p className="text-neutral-300">対象者の救出に成功しました。</p>
+        <div className="flex-1 flex items-center justify-center p-8 text-center flex-col gap-8 animate-in fade-in duration-1000">
+          <div className="space-y-4">
+            <h2 className="text-4xl text-cyan-400 font-bold tracking-tighter italic animate-pulse">MISSION COMPLETE</h2>
+            <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+            <p className="text-neutral-300 font-sans">対象者の救出に成功しました。</p>
+          </div>
+          
+          <a
+            href="https://twitter.com/intent/tweet?text=%E6%95%91%E5%87%BA%E3%81%AB%E6%88%90%E5%8A%9F%E3%81%97%E3%81%9F%EF%BC%81%0A%0A%5B%E3%81%93%E3%81%93%E3%81%AB%E3%83%AA%E3%83%B3%E3%82%AF%5D%0A&openExternalBrowser=1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-neutral-200 transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            結果をポストする
+          </a>
         </div>
       ) : (
         renderActiveStepContent()
@@ -748,6 +844,47 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Popup Message Overlay */}
+      {popupMessage && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-6 animate-in fade-in duration-300"
+          onClick={() => setPopupMessage(null)}
+        >
+          <div
+            className="bg-neutral-900 border-2 border-cyan-500 rounded-lg p-6 max-w-xs w-full shadow-[0_0_30px_rgba(6,182,212,0.3)] transform transition-all animate-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-cyan-900 flex items-center justify-center border border-cyan-400">
+                <span className="text-cyan-400 font-bold">先</span>
+              </div>
+              <div className="text-cyan-400 font-bold tracking-widest text-sm">先輩からの助言</div>
+            </div>
+            <p className="text-neutral-100 text-lg mb-6 leading-relaxed font-sans">{popupMessage.replace('先輩：', '')}</p>
+            <button
+              onClick={() => setPopupMessage(null)}
+              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded transition-colors uppercase tracking-widest text-sm"
+            >
+              了解
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hint Dialog */}
+      <HintDialog
+        hints={(() => {
+          const allHints = HINTS[activeTab] || [];
+          if (activeTab === 'last_2' && !unlockedTabs.includes('situation_review')) {
+            // "ここから先は情報整理ボタンを押してから解放される" is at index 4
+            return allHints.slice(0, 5);
+          }
+          return allHints;
+        })()}
+        isOpen={showHints}
+        onClose={() => setShowHints(false)}
+      />
     </main>
   );
 }
