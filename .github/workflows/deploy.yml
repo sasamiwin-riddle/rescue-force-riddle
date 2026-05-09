@@ -20,9 +20,8 @@ jobs:
         run: npm i -g vercel
 
       - name: Pull Vercel Project Settings
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel pull --yes --environment production --token $VERCEL_TOKEN
+      - name: Pull Vercel Project Settings
+        run: vercel pull --yes --environment production --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Install deps & Build
         run: |
@@ -32,11 +31,9 @@ jobs:
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           vercel deploy --prebuilt --prod \
             --token $VERCEL_TOKEN \
             --confirm \
-            --org $VERCEL_ORG_ID \
             --project $VERCEL_PROJECT_ID
