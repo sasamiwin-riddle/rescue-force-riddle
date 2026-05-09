@@ -9,7 +9,7 @@ import { HintDialog } from '../components/HintDialog';
 import { CustomSelect } from '../components/CustomSelect';
 import { HINTS } from './hints';
 
-const ALL_STEPS: Step[] = ['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2', 'clear'];
+const ALL_STEPS: Step[] = ['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2', 'situation_review', 'clear'];
 
 interface StepState {
   messages: { sender: '救助システム' | '先輩'; text: string; image?: string }[];
@@ -38,9 +38,9 @@ export default function Home() {
   });
   const [showQ5, setShowQ5] = useState(false);
   const [selectedItem, setSelectedItem] = useState("");
-  const [s4Pos, setS4Pos] = useState("上");
-  const [s4Act, setS4Act] = useState("蓋を取る");
-  const [s4View, setS4View] = useState("上");
+  const [s4Pos, setS4Pos] = useState("");
+  const [s4Act, setS4Act] = useState("");
+  const [s4View, setS4View] = useState("");
 
   const [stepStates, setStepStates] = useState<Record<Step, StepState>>({
     intro: {
@@ -57,16 +57,16 @@ export default function Home() {
     step1_2: { messages: [{ sender: '先輩', text: 'マニュアルの確認は済んだか？では「s」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ。' }], phase1Complete: true, isCleared: false },
     step2_1: { messages: [{ sender: '先輩', text: 'お見事！この流れの繰り返しだ。' }, { sender: '先輩', text: 'ここまで60分、順調だな。' }], phase1Complete: false, isCleared: false },
     step2_2: { messages: [{ sender: '先輩', text: 'よし、正解だ！「L」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ。' }], phase1Complete: true, isCleared: false },
-    step3_1: { messages: [{ sender: '先輩', text: 'ドライヤーの提出も無事完了したようだ。それによって、重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ！' }, { sender: '先輩', text: 'ここまで100分、順調だな。' }], phase1Complete: false, isCleared: false },
+    step3_1: { messages: [{ sender: '先輩', text: 'ドライヤーの提出も無事完了したようだ。それによって、重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ！' }, { sender: '先輩', text: 'ここまで90分、順調だな。' }], phase1Complete: false, isCleared: false },
     step3_2: { messages: [{ sender: '先輩', text: '冴えてるね！さあ、「h」のシルエットに最も近いアイテムを登場したイラストの中から選ぼう。' }], phase1Complete: true, isCleared: false },
-    step4_1: { messages: [{ sender: '先輩', text: '無事にイスが提出された。' }, { sender: '先輩', text: 'ここまで140分。いよいよ最後の謎だ。' }], phase1Complete: false, isCleared: false },
+    step4_1: { messages: [{ sender: '先輩', text: '無事にイスが提出された。' }, { sender: '先輩', text: 'ここまで130分。いよいよ最後の謎だ。' }], phase1Complete: false, isCleared: false },
     step4_2: { messages: [{ sender: '先輩', text: 'また「L」か。二つもドライヤーがあるか分からない。今追加された機能の「一旦転送」を使う方が良さげだな。マニュアルを確認して、最後のアイテムはどうすれば良いか考えてくれ。' }], phase1Complete: true, isCleared: false },
-    last_1: { messages: [{ sender: '先輩', text: 'ここまで160分。いよいよ最後の山場だ。' }, { sender: '先輩', text: '私の推測だと答えではないと思うが、念のため可能性を潰しておきたい。「ドライヤー」を再度選択してくれ。' }], phase1Complete: true, isCleared: false },
+    last_1: { messages: [{ sender: '先輩', text: 'ここまで144分。いよいよ最後の山場だ。' }, { sender: '先輩', text: '私の推測だと答えではないと思うが、念のため可能性を潰しておきたい。「ドライヤー」を再度選択してくれ。' }], phase1Complete: true, isCleared: false },
     last_2: {
       messages: [{ sender: '先輩', text: 'マニュアルの2ページ目は確認できたか？' },
       { sender: '先輩', text: '何のアイテムが良いか、私はすでに検討がついているが、まだ時間はある。この謎は救助システムから出力された謎に少し書き加えたものだ。私のこの謎を解けば、私の考えが伝わるだろう。' },
-      { sender: '先輩', text: '今すぐこの謎を見ても良いし、自力で考えてから確認のために解いても良い。君の好きなやり方で考えてくれ' },
-      { sender: '先輩', text: 'もし状況の整理がしたい場合は「状況整理を行う」と言ってくれ。' }], phase1Complete: false, isCleared: false
+      { sender: '先輩', text: '今すぐこの謎を見ても良いし、自力で考えてから確認のために解いても良い。君の好きなやり方で考えてくれ。いずれにせよ回答はしてもらうぞ' },
+      { sender: '先輩', text: 'ヒントを聞いても謎が解けなかったり、謎が解けても理由が分からない場合、「状況整理を行う」と言ってくれ。' }], phase1Complete: false, isCleared: false
     },
     situation_review: { messages: [], phase1Complete: false, isCleared: false },
     clear: { messages: [{ sender: '救助システム', text: 'MISSION COMPLETE. 対象者の救出に成功しました。' }], phase1Complete: true, isCleared: true },
@@ -113,11 +113,34 @@ export default function Home() {
   // Persistence logic
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // 簡易的な難読化関数 (XOR + Base64)
+  const obfuscate = (data: any) => {
+    const json = JSON.stringify(data);
+    const key = "SRF_SECRET_KEY_2026";
+    const xored = json.split('').map((char, i) =>
+      String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(i % key.length))
+    ).join('');
+    return btoa(unescape(encodeURIComponent(xored)));
+  };
+
+  const deobfuscate = (encoded: string) => {
+    try {
+      const decoded = decodeURIComponent(escape(atob(encoded)));
+      const key = "SRF_SECRET_KEY_2026";
+      const xored = decoded.split('').map((char, i) =>
+        String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(i % key.length))
+      ).join('');
+      return JSON.parse(xored);
+    } catch (e) {
+      return null;
+    }
+  };
+
   useEffect(() => {
-    const saved = localStorage.getItem('rescue-force-progress');
+    const saved = localStorage.getItem('rescue-force-progress-v2');
     if (saved) {
-      try {
-        const data = JSON.parse(saved);
+      const data = deobfuscate(saved);
+      if (data) {
         if (data.activeTab) setActiveTab(data.activeTab);
         if (data.unlockedTabs) setUnlockedTabs(data.unlockedTabs);
         if (data.gameStarted) setGameStarted(data.gameStarted);
@@ -126,8 +149,6 @@ export default function Home() {
         if (data.lastRiddleRevealed) setLastRiddleRevealed(data.lastRiddleRevealed);
         if (data.reviewAnswers) setReviewAnswers(data.reviewAnswers);
         if (data.showQ5) setShowQ5(data.showQ5);
-      } catch (e) {
-        console.error('Failed to load progress', e);
       }
     }
     setIsInitialized(true);
@@ -145,7 +166,7 @@ export default function Home() {
       reviewAnswers,
       showQ5
     };
-    localStorage.setItem('rescue-force-progress', JSON.stringify(data));
+    localStorage.setItem('rescue-force-progress-v2', obfuscate(data));
   }, [isInitialized, activeTab, unlockedTabs, gameStarted, stepStates, manual2Unlocked, lastRiddleRevealed, reviewAnswers, showQ5]);
 
 
@@ -178,8 +199,13 @@ export default function Home() {
       const res = await validateRiddle(answer, activeTab);
       if (res.success) {
         // 正解時のみエコーと成功メッセージを表示
-        addMessage(activeTab, '救助システム', `> 謎の回答: ${answer}`);
-        addMessage(activeTab, '救助システム', `SUCCESS: ${res.message}`);
+        if (activeTab === 'last_2') {
+          addMessage(activeTab, '先輩', `> 謎の回答: ${answer}`);
+          addMessage(activeTab, '先輩', '正解だ。');
+        } else {
+          addMessage(activeTab, '救助システム', `> 謎の回答: ${answer}`);
+        }
+        addMessage(activeTab, '救助システム', res.message);
 
         if (activeTab === 'last_2') {
           addMessage(activeTab, '先輩', 'これまで出たイラストのアイテムが答えだが、複数あったり形が違う場合もある。聞いた時に一発でこれと分かる単語で回答するんだ');
@@ -220,7 +246,8 @@ export default function Home() {
     try {
       const res = await validateItemSelection(item, activeTab);
       if (res.success) {
-        addMessage(activeTab, '救助システム', `> アイテム選択: ${item}`);
+        const label = activeTab === 'last_2' ? 'アナウンス' : 'アイテム選択';
+        addMessage(activeTab, '救助システム', `> ${label}: ${item}`);
       }
       handleActionResponse(res);
     } catch (e) {
@@ -482,9 +509,9 @@ export default function Home() {
                     className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.where === 'お風呂' ? 'border-green-500 text-green-400' : reviewAnswers.where ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
                   >
                     <option value="">選択してください</option>
-                    <option value="お風呂">お風呂だったから</option>
-                    <option value="ポット">ポットだったから</option>
-                    <option value="マグマ">マグマだったから</option>
+                    <option value="お風呂">おそらくお風呂だったから</option>
+                    <option value="ポット">おそらくポットだったから</option>
+                    <option value="マグマ">おそらくマグマだったから</option>
                   </select>
                 </div>
 
@@ -505,7 +532,7 @@ export default function Home() {
 
                 {/* 質問4 */}
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-300">4. なぜお湯が冷めないのか？</p>
+                  <p className="text-sm text-neutral-300">4. なぜ2時間30分経ってもお湯が冷めないのか？</p>
                   <select
                     value={reviewAnswers.item}
                     onChange={(e) => setReviewAnswers(prev => ({ ...prev, item: e.target.value }))}
@@ -514,7 +541,7 @@ export default function Home() {
                     <option value="">選択してください</option>
                     <option value="蓋">蓋を一度も取っていないから</option>
                     <option value="追い炊き">追い炊きボタンを押し続けているから</option>
-                    <option value="元々">元々温度を保つ設備になっているから</option>
+                    <option value="元々">おそらく元々温度を保つ設備になっているから</option>
                   </select>
                 </div>
 
@@ -653,6 +680,7 @@ export default function Home() {
                         value={s4Pos}
                         onChange={setS4Pos}
                         className="flex-1"
+                        placeholder="場所"
                         options={[
                           { value: "上", label: "上" },
                           { value: "中", label: "真ん中" },
@@ -667,6 +695,7 @@ export default function Home() {
                         value={s4Act}
                         onChange={setS4Act}
                         className="flex-1 min-w-[120px]"
+                        placeholder="アクション"
                         options={[
                           { value: "蓋を取る", label: "蓋を取る" },
                           { value: "半分食べる", label: "半分食べる" },
@@ -684,6 +713,7 @@ export default function Home() {
                         value={s4View}
                         onChange={setS4View}
                         className="flex-1 min-w-[80px]"
+                        placeholder="視点"
                         options={[
                           { value: "上", label: "上" },
                           { value: "中", label: "真ん中" },
@@ -695,6 +725,10 @@ export default function Home() {
                       <span className="text-neutral-500 text-xs shrink-0">から見る</span>
                       <button
                         onClick={() => {
+                          if (!selectedItem || !s4Pos || !s4Act || !s4View) {
+                            setPopupMessage('先輩：全ての項目を選択してくれ');
+                            return;
+                          }
                           handleStep4Select(selectedItem, s4Pos, s4Act, s4View);
                         }}
                         className="w-full sm:w-auto bg-cyan-900 text-cyan-100 px-6 py-2 rounded font-bold hover:bg-cyan-800 transition-colors h-[40px]"
@@ -735,7 +769,7 @@ export default function Home() {
                       </button>
                     </div>
                     {!state.phase1Complete ? (
-                      <InputField onSubmit={handleRiddleSubmit} placeholder="LAST 2の謎の赤枠内に入るものを答えよ" />
+                      <InputField onSubmit={handleRiddleSubmit} placeholder="赤枠内に入るものは？" />
                     ) : (
                       <div className="flex flex-col gap-2 p-2 border border-pink-900/30 bg-pink-900/5 rounded">
                         <p className="text-[10px] text-pink-400 font-bold uppercase tracking-tighter mb-1 font-sans">自由入力モード起動中</p>

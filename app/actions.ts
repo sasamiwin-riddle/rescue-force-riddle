@@ -1,6 +1,6 @@
 "use server";
 
-export type Step = 'top' | 'intro' | 'step1_1' | 'manual' | 'step1_2' | 'step2_1' | 'step2_2' | 'step3_1' | 'step3_2' | 'step4_1' | 'step4_2' | 'last_1' | 'last_2' | 'situation_review' | 'clear';
+export type Step = 'intro' | 'step1_1' | 'manual' | 'step1_2' | 'step2_1' | 'step2_2' | 'step3_1' | 'step3_2' | 'step4_1' | 'step4_2' | 'last_1' | 'last_2' | 'situation_review' | 'clear';
 
 export interface ActionResponse {
   success: boolean;
