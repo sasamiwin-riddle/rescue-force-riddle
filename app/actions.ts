@@ -34,7 +34,7 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
   if (pattern && pattern.test(normalized)) {
     // Determine the next choice step
     let nextStep: Step | undefined;
-    if (currentStep === 'step1_1') nextStep = 'step1_2';
+    if (currentStep === 'step1_1') nextStep = 'manual';
     else if (currentStep === 'step2_1') nextStep = 'step2_2';
     else if (currentStep === 'step3_1') nextStep = 'step3_2';
     else if (currentStep === 'step4_1') nextStep = 'step4_2';

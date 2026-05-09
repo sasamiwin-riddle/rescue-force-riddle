@@ -285,7 +285,7 @@ export default function Home() {
   const renderTabNavigation = () => (
     <div
       ref={tabsContainerRef}
-      className="flex w-full overflow-x-auto border-b border-neutral-700 bg-neutral-900 sticky top-0 z-10 no-scrollbar"
+      className="flex w-full min-w-0 overflow-x-auto border-b border-neutral-700 bg-neutral-900 sticky top-0 z-10 no-scrollbar shrink-0"
     >
       {['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2', 'situation_review']
         .filter(step => unlockedTabs.includes(step as Step))
@@ -329,7 +329,7 @@ export default function Home() {
 
         {/* Riddle Image Section */}
         {(activeTab.endsWith('_1') || activeTab === 'last_2') && activeTab !== 'last_1' && (
-          <div className="p-4 bg-neutral-950 flex justify-center border-b border-neutral-800">
+          <div className="p-4 bg-neutral-950 flex justify-center border-b border-neutral-800 shrink-0">
             <div className="w-full max-w-sm aspect-video bg-neutral-800 rounded flex items-center justify-center relative overflow-hidden">
               {activeTab === 'last_2' && !lastRiddleRevealed ? (
                 <button
@@ -378,7 +378,7 @@ export default function Home() {
                 <div className="space-y-4">
                   <div className="animate-in fade-in duration-700">
                     <p className="text-cyan-400 font-bold underline mb-1">■ アイテムの自動防水加工</p>
-                    <p className="text-xs text-neutral-400">自動でアイテムに防水加工を施し、水を吸って変形しないようにできる</p>
+                    <p className="text-xs text-neutral-400">自動でアイテムに防水加工を施し、水の影響を受けなくなる</p>
                   </div>
 
                   {stepStates['step1_2'].isCleared && (
@@ -754,7 +754,7 @@ export default function Home() {
               <div className="flex flex-col items-center gap-2">
                 {state.nextStep ? (
                   <button
-                    onClick={() => setActiveTab(state.nextStep!)}
+                    onClick={() => setActiveTab(activeTab === 'step1_1' && stepStates.manual.isCleared ? 'step1_2' : state.nextStep!)}
                     className="w-full bg-cyan-600/40 text-cyan-100 py-3 rounded font-bold border border-cyan-500 hover:bg-cyan-500 transition-all uppercase tracking-widest shadow-[0_0_15px_rgba(8,145,178,0.2)] animate-in fade-in zoom-in"
                   >
                     次へ進む
@@ -774,7 +774,7 @@ export default function Home() {
 
   if (!gameStarted) {
     return (
-      <main className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30">
+      <main className="flex h-screen w-full flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 overflow-y-auto">
         <div className="flex-1 overflow-y-auto p-6 bg-neutral-950 flex flex-col items-center justify-center gap-8">
           <div className="text-center space-y-4">
             <h2 className="text-4xl sm:text-5xl font-bold text-cyan-400 tracking-tighter italic animate-in zoom-in duration-1000">
@@ -791,10 +791,10 @@ export default function Home() {
               注意事項
             </h3>
             <ul className="text-xs text-neutral-300 space-y-3 leading-relaxed list-disc pl-4">
-              <li>本システムは閉鎖空間内に閉じ込められた対象者の救出を目的としています。</li>
-              <li>救助には高い推察力と論理的思考が必要とされます。</li>
-              <li>システム内の情報は常に最新のものを確認してください。</li>
-              <li>想定救助時間は180分以内です。</li>
+              <li>特別な知識は不要ですが、インターネット検索をしていただいても構いません。</li>
+              <li>ヒント（先輩HELP）や手助けを利用しなくても最後まで解くことが可能です。</li>
+              <li>ヒントは段階的に用意されています。ペナルティやクリアランクなどもございません。</li>
+              <li>ゲーム全体で60分を想定時間として設定していますが、諸々の作業や救出のリアリティを鑑みて3倍の時間が作中で流れます。タイムアタックをする場合は1/3にしてお考えください。</li>
             </ul>
           </div>
 
@@ -810,7 +810,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 max-w-2xl mx-auto border-x border-neutral-800">
+    <main className="flex h-screen w-full max-w-2xl flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 mx-auto border-x border-neutral-800 overflow-hidden">
       {/* Header */}
       <h1 className="text-xl font-bold text-cyan-400 p-3 text-center tracking-widest border-b border-cyan-900 w-full bg-black shrink-0">
         ライクアルファベット
