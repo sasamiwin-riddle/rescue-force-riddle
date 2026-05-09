@@ -812,11 +812,10 @@ export default function Home() {
         <div className="flex-1 overflow-y-auto p-6 bg-neutral-950 flex flex-col items-center justify-center gap-8">
           <div className="text-center space-y-4">
             <h2 className="text-4xl sm:text-5xl font-bold text-cyan-400 tracking-tighter italic animate-in zoom-in duration-1000">
-              S.R.F.
+              LIKE ALPHABET
               <br />
-              <span className="text-xl sm:text-2xl">SPATIAL RESCUE FORCE</span>
+              <span className="text-xl sm:text-2xl">謎解きゲーム</span>
             </h2>
-            <p className="text-neutral-500 text-xs tracking-widest uppercase">閉鎖空間救助隊：現場研修システム</p>
           </div>
 
           <div className="w-full max-w-sm space-y-4 bg-neutral-900/50 p-4 sm:p-6 rounded-lg border border-cyan-900/30 font-sans">
@@ -836,7 +835,7 @@ export default function Home() {
             onClick={() => setGameStarted(true)}
             className="w-full max-w-sm bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(6,182,212,0.3)] uppercase tracking-[0.2em] text-sm"
           >
-            研修を開始する
+            ゲームスタート
           </button>
         </div>
       </main>
