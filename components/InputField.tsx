@@ -45,7 +45,7 @@ export function InputField({ onSubmit, disabled, placeholder, maxLength }: Input
       <button
         type="submit"
         disabled={disabled || !input.trim()}
-        className="px-4 py-2 bg-cyan-900/40 text-cyan-400 border border-cyan-800 rounded-md hover:bg-cyan-800 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed uppercase text-sm font-bold tracking-wider"
+        className="px-3 sm:px-4 py-2 bg-cyan-900/40 text-cyan-400 border border-cyan-800 rounded-md hover:bg-cyan-800 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed uppercase text-xs sm:text-sm font-bold tracking-wider"
       >
         送信
       </button>

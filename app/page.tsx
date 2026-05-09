@@ -6,6 +6,7 @@ import { MessageDialog } from '../components/MessageDialog';
 import { ImageViewer } from '../components/ImageViewer';
 import { InputField } from '../components/InputField';
 import { HintDialog } from '../components/HintDialog';
+import { CustomSelect } from '../components/CustomSelect';
 import { HINTS } from './hints';
 
 const ALL_STEPS: Step[] = ['intro', 'step1_1', 'manual', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2', 'clear'];
@@ -36,6 +37,10 @@ export default function Home() {
     q5: ''
   });
   const [showQ5, setShowQ5] = useState(false);
+  const [selectedItem, setSelectedItem] = useState("");
+  const [s4Pos, setS4Pos] = useState("上");
+  const [s4Act, setS4Act] = useState("蓋を取る");
+  const [s4View, setS4View] = useState("上");
 
   const [stepStates, setStepStates] = useState<Record<Step, StepState>>({
     intro: {
@@ -82,6 +87,10 @@ export default function Home() {
   }, [activeTab, stepStates[activeTab]?.messages]);
 
   useEffect(() => {
+    setSelectedItem("");
+  }, [activeTab]);
+
+  useEffect(() => {
     if (!tabsContainerRef.current) return;
     const container = tabsContainerRef.current;
     const activeBtn = container.querySelector('[data-active="true"]') as HTMLElement;
@@ -100,6 +109,44 @@ export default function Home() {
       });
     }
   }, [activeTab]);
+
+  // Persistence logic
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('rescue-force-progress');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.activeTab) setActiveTab(data.activeTab);
+        if (data.unlockedTabs) setUnlockedTabs(data.unlockedTabs);
+        if (data.gameStarted) setGameStarted(data.gameStarted);
+        if (data.stepStates) setStepStates(data.stepStates);
+        if (data.manual2Unlocked) setManual2Unlocked(data.manual2Unlocked);
+        if (data.lastRiddleRevealed) setLastRiddleRevealed(data.lastRiddleRevealed);
+        if (data.reviewAnswers) setReviewAnswers(data.reviewAnswers);
+        if (data.showQ5) setShowQ5(data.showQ5);
+      } catch (e) {
+        console.error('Failed to load progress', e);
+      }
+    }
+    setIsInitialized(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    const data = {
+      activeTab,
+      unlockedTabs,
+      gameStarted,
+      stepStates,
+      manual2Unlocked,
+      lastRiddleRevealed,
+      reviewAnswers,
+      showQ5
+    };
+    localStorage.setItem('rescue-force-progress', JSON.stringify(data));
+  }, [isInitialized, activeTab, unlockedTabs, gameStarted, stepStates, manual2Unlocked, lastRiddleRevealed, reviewAnswers, showQ5]);
 
 
   const addMessage = (step: Step, sender: '救助システム' | '先輩', text: string, image?: string) => {
@@ -133,7 +180,7 @@ export default function Home() {
         // 正解時のみエコーと成功メッセージを表示
         addMessage(activeTab, '救助システム', `> 謎の回答: ${answer}`);
         addMessage(activeTab, '救助システム', `SUCCESS: ${res.message}`);
-        
+
         if (activeTab === 'last_2') {
           addMessage(activeTab, '先輩', 'これまで出たイラストのアイテムが答えだが、複数あったり形が違う場合もある。聞いた時に一発でこれと分かる単語で回答するんだ');
         }
@@ -250,7 +297,7 @@ export default function Home() {
               key={step}
               onClick={() => setActiveTab(step)}
               data-active={isActive}
-              className={`px-4 py-3 text-sm font-bold whitespace-nowrap transition-colors ${isActive
+              className={`px-3 py-2.5 sm:px-4 sm:py-3 text-[13px] sm:text-sm font-bold whitespace-nowrap transition-colors ${isActive
                 ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-900/20'
                 : 'text-neutral-400 hover:text-cyan-200 hover:bg-neutral-800'
                 }`}
@@ -410,7 +457,7 @@ export default function Home() {
                 <h3 className="text-cyan-400 font-bold text-lg tracking-tighter uppercase italic">状況整理シート</h3>
               </div>
 
-              <div className="space-y-8 bg-neutral-900/50 p-6 rounded-lg border border-cyan-900/30">
+              <div className="space-y-6 sm:space-y-8 bg-neutral-900/50 p-4 sm:p-6 rounded-lg border border-cyan-900/30">
                 {/* 質問1 */}
                 <div className="space-y-3">
                   <p className="text-sm text-neutral-300">1. マニュアル2ページ目に記載の救助対象者以上の温度とは、だいたい何℃以上だろうか？</p>
@@ -553,53 +600,43 @@ export default function Home() {
                 {/* フェーズ2: アイテム選択 (stepX_2) */}
                 {activeTab.endsWith('_2') && activeTab !== 'last_2' && (
                   <div className="flex gap-2">
-                    <select id={`select-${activeTab}`} className="flex-1 bg-black text-cyan-300 border border-cyan-800 rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-cyan-400">
-                      <option value="">アイテムを選択</option>
-                      {/* Step 1-2以降: S字フック, 制服 */}
-                      {['step1_2', 'step2_2', 'step3_2', 'step4_2'].includes(activeTab) && (
-                        <>
-                          <option value="S字フック">S字フック</option>
-                          <option value="制服">制服</option>
-                        </>
-                      )}
-                      {/* Step 2-2以降: ドライヤー, ハブラシ, 浴衣, トイレ */}
-                      {['step2_2', 'step3_2', 'step4_2'].includes(activeTab) && (
-                        <>
-                          <option value="ドライヤー">ドライヤー</option>
-                          <option value="ハブラシ">ハブラシ</option>
-                          <option value="浴衣">浴衣</option>
-                          <option value="トイレ">トイレ</option>
-                        </>
-                      )}
-                      {/* Step 3-2以降: 墨汁, 饅頭, 扇子, イス, 茎, 木, 盆, 缶, 蜘蛛 */}
-                      {['step3_2', 'step4_2'].includes(activeTab) && (
-                        <>
-                          <option value="墨汁">墨汁</option>
-                          <option value="饅頭">饅頭</option>
-                          <option value="扇子">扇子</option>
-                          <option value="イス">イス</option>
-                          <option value="茎">茎</option>
-                          <option value="木">木</option>
-                          <option value="盆">盆</option>
-                          <option value="缶">缶</option>
-                          <option value="蜘蛛">蜘蛛</option>
-                        </>
-                      )}
-                      {/* Step 4-2: 水, 冷蔵庫 */}
-                      {activeTab === 'step4_2' && (
-                        <>
-                          <option value="水">水</option>
-                          <option value="冷蔵庫">冷蔵庫</option>
-                        </>
-                      )}
-                    </select>
+                    <CustomSelect
+                      value={selectedItem}
+                      onChange={setSelectedItem}
+                      placeholder="アイテムを選択"
+                      className="flex-1"
+                      options={[
+                        { value: "S字フック", label: "S字フック" },
+                        { value: "制服", label: "制服" },
+                        ...((['step2_2', 'step3_2', 'step4_2'].includes(activeTab)) ? [
+                          { value: "ドライヤー", label: "ドライヤー" },
+                          { value: "ハブラシ", label: "ハブラシ" },
+                          { value: "浴衣", label: "浴衣" },
+                          { value: "トイレ", label: "トイレ" },
+                        ] : []),
+                        ...((['step3_2', 'step4_2'].includes(activeTab)) ? [
+                          { value: "墨汁", label: "墨汁" },
+                          { value: "饅頭", label: "饅頭" },
+                          { value: "扇子", label: "扇子" },
+                          { value: "イス", label: "イス" },
+                          { value: "茎", label: "茎" },
+                          { value: "木", label: "木" },
+                          { value: "盆", label: "盆" },
+                          { value: "缶", label: "缶" },
+                          { value: "蜘蛛", label: "蜘蛛" },
+                        ] : []),
+                        ...((activeTab === 'step4_2') ? [
+                          { value: "水", label: "水" },
+                          { value: "冷蔵庫", label: "冷蔵庫" },
+                        ] : []),
+                      ]}
+                    />
                     {activeTab !== 'step4_2' && (
                       <button
                         onClick={() => {
-                          const val = (document.getElementById(`select-${activeTab}`) as HTMLSelectElement).value;
-                          if (val) handleItemSelect(val);
+                          if (selectedItem) handleItemSelect(selectedItem);
                         }}
-                        className="bg-cyan-900 text-cyan-100 px-4 py-2 rounded font-bold hover:bg-cyan-800"
+                        className="bg-cyan-900 text-cyan-100 px-4 py-2 rounded font-bold hover:bg-cyan-800 transition-colors h-[40px]"
                       >
                         送信
                       </button>
@@ -610,46 +647,57 @@ export default function Home() {
                 {/* Step 4-2: 3パーツ選択 */}
                 {activeTab === 'step4_2' && (
                   <div className="flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <span className="text-neutral-500 flex items-center">の</span>
-                      <select id="s4-pos" className="flex-1 bg-black text-cyan-300 border border-cyan-800 rounded px-2 py-2 text-sm">
-                        <option value="上">上</option>
-                        <option value="中">真ん中</option>
-                        <option value="横">横</option>
-                        <option value="下">下</option>
-                      </select>
-                    </div>
                     <div className="flex gap-2 items-center">
-                      <span className="text-neutral-500">を</span>
-                      <select id="s4-act" className="flex-1 bg-black text-cyan-300 border border-cyan-800 rounded px-2 py-2 text-sm">
-                        <option value="蓋を取る">蓋を取る</option>
-                        <option value="半分食べる">半分食べる</option>
-                        <option value="全部食べる">全部食べる</option>
-                        <option value="半分飲む">半分飲む</option>
-                        <option value="全部飲む">全部飲む</option>
-                        <option value="開く">開く</option>
-                        <option value="閉じる">閉じる</option>
-                        <option value="折る">折る</option>
-                        <option value="畳む">畳む</option>
-                      </select>
-                      <span className="text-neutral-500">。それを</span>
-                      <select id="s4-view" className="flex-1 bg-black text-cyan-300 border border-cyan-800 rounded px-2 py-2 text-sm">
-                        <option value="上">上</option>
-                        <option value="中">真ん中</option>
-                        <option value="横">横</option>
-                        <option value="斜め">斜め</option>
-                        <option value="下">下</option>
-                      </select>
-                      <span className="text-neutral-500">から見る</span>
+                      <span className="text-neutral-500 text-xs shrink-0">の</span>
+                      <CustomSelect
+                        value={s4Pos}
+                        onChange={setS4Pos}
+                        className="flex-1"
+                        options={[
+                          { value: "上", label: "上" },
+                          { value: "中", label: "真ん中" },
+                          { value: "横", label: "横" },
+                          { value: "下", label: "下" },
+                        ]}
+                      />
+                      <span className="text-neutral-500 text-xs shrink-0">を</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <CustomSelect
+                        value={s4Act}
+                        onChange={setS4Act}
+                        className="flex-1 min-w-[120px]"
+                        options={[
+                          { value: "蓋を取る", label: "蓋を取る" },
+                          { value: "半分食べる", label: "半分食べる" },
+                          { value: "全部食べる", label: "全部食べる" },
+                          { value: "半分飲む", label: "半分飲む" },
+                          { value: "全部飲む", label: "全部飲む" },
+                          { value: "開く", label: "開く" },
+                          { value: "閉じる", label: "閉じる" },
+                          { value: "折る", label: "折る" },
+                          { value: "畳む", label: "畳む" },
+                        ]}
+                      />
+                      <span className="text-neutral-500 text-xs shrink-0">。それを</span>
+                      <CustomSelect
+                        value={s4View}
+                        onChange={setS4View}
+                        className="flex-1 min-w-[80px]"
+                        options={[
+                          { value: "上", label: "上" },
+                          { value: "中", label: "真ん中" },
+                          { value: "横", label: "横" },
+                          { value: "斜め", label: "斜め" },
+                          { value: "下", label: "下" },
+                        ]}
+                      />
+                      <span className="text-neutral-500 text-xs shrink-0">から見る</span>
                       <button
                         onClick={() => {
-                          const i = (document.getElementById(`select-${activeTab}`) as HTMLSelectElement).value;
-                          const p = (document.getElementById('s4-pos') as HTMLSelectElement).value;
-                          const a = (document.getElementById('s4-act') as HTMLSelectElement).value;
-                          const v = (document.getElementById('s4-view') as HTMLSelectElement).value;
-                          handleStep4Select(i, p, a, v);
+                          handleStep4Select(selectedItem, s4Pos, s4Act, s4View);
                         }}
-                        className="bg-cyan-900 text-cyan-100 px-6 py-2 rounded font-bold hover:bg-cyan-800"
+                        className="w-full sm:w-auto bg-cyan-900 text-cyan-100 px-6 py-2 rounded font-bold hover:bg-cyan-800 transition-colors h-[40px]"
                       >
                         実行
                       </button>
@@ -660,10 +708,10 @@ export default function Home() {
                 {/* Last Step 1: ドライヤー強制選択 */}
                 {activeTab === 'last_1' && (
                   <div className="flex gap-2">
-                    <select disabled className="flex-1 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded px-3 py-2 text-sm">
-                      <option>ドライヤー</option>
-                    </select>
-                    <button onClick={() => handleItemSelect('ドライヤー_forced')} className="bg-red-900 text-red-100 px-4 py-2 rounded font-bold hover:bg-red-800">
+                    <div className="flex-1 bg-neutral-900 text-neutral-500 border border-neutral-800 rounded px-3 py-2 text-sm h-[40px] flex items-center">
+                      ドライヤー
+                    </div>
+                    <button onClick={() => handleItemSelect('ドライヤー_forced')} className="bg-red-900 text-red-100 px-4 py-2 rounded font-bold hover:bg-red-800 h-[40px]">
                       送信
                     </button>
                   </div>
@@ -693,7 +741,7 @@ export default function Home() {
                         <p className="text-[10px] text-pink-400 font-bold uppercase tracking-tighter mb-1 font-sans">自由入力モード起動中</p>
                         <InputField
                           onSubmit={(val) => handleItemSelect(val)}
-                          placeholder="アナウンスしたい単語を入力 (4文字以内)..."
+                          placeholder="単語を入力 (4文字以内)..."
                           maxLength={4}
                         />
                       </div>
@@ -729,15 +777,15 @@ export default function Home() {
       <main className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30">
         <div className="flex-1 overflow-y-auto p-6 bg-neutral-950 flex flex-col items-center justify-center gap-8">
           <div className="text-center space-y-4">
-            <h2 className="text-5xl font-bold text-cyan-400 tracking-tighter italic animate-in zoom-in duration-1000">
+            <h2 className="text-4xl sm:text-5xl font-bold text-cyan-400 tracking-tighter italic animate-in zoom-in duration-1000">
               S.R.F.
               <br />
-              <span className="text-2xl">SPATIAL RESCUE FORCE</span>
+              <span className="text-xl sm:text-2xl">SPATIAL RESCUE FORCE</span>
             </h2>
             <p className="text-neutral-500 text-xs tracking-widest uppercase">閉鎖空間救助隊：現場研修システム</p>
           </div>
 
-          <div className="w-full max-w-sm space-y-4 bg-neutral-900/50 p-6 rounded-lg border border-cyan-900/30 font-sans">
+          <div className="w-full max-w-sm space-y-4 bg-neutral-900/50 p-4 sm:p-6 rounded-lg border border-cyan-900/30 font-sans">
             <h3 className="text-cyan-400 font-bold text-sm border-b border-cyan-900 pb-2 mb-4 flex items-center gap-2">
               <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
               注意事項
@@ -779,7 +827,7 @@ export default function Home() {
             <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
             <p className="text-neutral-300 font-sans">対象者の救出に成功しました。</p>
           </div>
-          
+
           <a
             href="https://twitter.com/intent/tweet?text=%E6%95%91%E5%87%BA%E3%81%AB%E6%88%90%E5%8A%9F%E3%81%97%E3%81%9F%EF%BC%81%0A%0A%5B%E3%81%93%E3%81%93%E3%81%AB%E3%83%AA%E3%83%B3%E3%82%AF%5D%0A&openExternalBrowser=1"
             target="_blank"
@@ -813,33 +861,6 @@ export default function Home() {
               onClick={(e) => { e.stopPropagation(); setExpandedImage(null); }}
             >
               [ CLOSE ]
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Popup Message Overlay */}
-      {popupMessage && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-6 animate-in fade-in duration-300"
-          onClick={() => setPopupMessage(null)}
-        >
-          <div
-            className="bg-neutral-900 border-2 border-cyan-500 rounded-lg p-6 max-w-xs w-full shadow-[0_0_30px_rgba(6,182,212,0.3)] transform transition-all animate-in zoom-in duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-cyan-900 flex items-center justify-center border border-cyan-400">
-                <span className="text-cyan-400 font-bold">先</span>
-              </div>
-              <div className="text-cyan-400 font-bold tracking-widest text-sm">先輩からの助言</div>
-            </div>
-            <p className="text-neutral-100 text-lg mb-6 leading-relaxed font-sans">{popupMessage.replace('先輩：', '')}</p>
-            <button
-              onClick={() => setPopupMessage(null)}
-              className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded transition-colors uppercase tracking-widest text-sm"
-            >
-              了解
             </button>
           </div>
         </div>
