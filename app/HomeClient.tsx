@@ -723,7 +723,8 @@ export default function Home() {
                           { value: "ドライヤー", label: "ドライヤー" },
                           { value: "ハブラシ", label: "ハブラシ" },
                           { value: "浴衣", label: "浴衣" },
-                          { value: "トイレ", label: "トイレ" },
+                          { value: "畳", label: "畳" },
+                          { value: "カミソリ", label: "カミソリ" },
                         ] : []),
                         ...((['step3_2', 'step4_2'].includes(activeTab)) ? [
                           { value: "墨汁", label: "墨汁" },
