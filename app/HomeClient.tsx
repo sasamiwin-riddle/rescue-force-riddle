@@ -402,7 +402,7 @@ export default function Home() {
       <div className="flex-1 flex flex-col w-full min-h-0">
 
         {/* Riddle Image Section */}
-        {(activeTab === 'step0' || activeTab.endsWith('_1') || activeTab === 'last_2') && activeTab !== 'last_1' && (
+        {(activeTab === 'step0' || activeTab.endsWith('_1') || (activeTab === 'last_2' && !state.phase1Complete)) && activeTab !== 'last_1' && (
           <div className="p-4 bg-neutral-950 flex justify-center border-b border-neutral-800 shrink-0">
             <div className="w-full max-w-sm aspect-video bg-neutral-800 rounded flex items-center justify-center relative overflow-hidden">
               <ImageViewer step={activeTab} onImageClick={setExpandedImage} />
@@ -657,7 +657,7 @@ export default function Home() {
 
         {/* Input / Action Area */}
         {activeTab !== 'manual' && activeTab !== 'situation_review' && (
-          <div className={`bg-neutral-900 border-t border-neutral-700 p-4 shrink-0 transition-all duration-300 relative ${isInputCollapsed ? 'h-[60px]' : ''}`}>
+          <div className={`bg-neutral-900 border-t border-neutral-700 p-1.5 shrink-0 transition-all duration-300 relative ${isInputCollapsed ? 'h-[36px]' : ''}`}>
             {/* Collapse Toggle Button */}
             {!state.isCleared && (
               <button
@@ -671,11 +671,25 @@ export default function Home() {
 
             {!state.isCleared && !isInputCollapsed && (
               <>
-                <div className="flex justify-end items-end mb-2">
+                <div className="flex items-center gap-2 px-1 mb-1.5">
+                  {activeTab === 'last_2' && (
+                    <button
+                      onClick={() => {
+                        if (!unlockedTabs.includes('situation_review')) {
+                          setUnlockedTabs(prev => [...prev, 'situation_review']);
+                        }
+                        setActiveTab('situation_review');
+                      }}
+                      className="text-[10px] bg-cyan-900/40 border border-cyan-800 text-cyan-300 px-3 py-1 rounded-full hover:bg-cyan-800 transition-all flex items-center gap-1.5 font-sans"
+                    >
+                      <span className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse"></span>
+                      状況整理
+                    </button>
+                  )}
                   <button
                     onClick={handleHelp}
                     disabled={!HINTS[activeTab] || HINTS[activeTab].length === 0 || (activeTab === 'last_2' && state.phase1Complete)}
-                    className="text-xs bg-neutral-800 border border-neutral-600 text-neutral-300 px-2 py-1 rounded hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="text-[10px] bg-neutral-800 border border-neutral-700 text-neutral-300 px-2.5 py-1 rounded hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ml-auto"
                   >
                     先輩HELP
                   </button>
@@ -838,21 +852,7 @@ export default function Home() {
 
                 {/* Last Step 2: 謎解き -> 自由入力 */}
                 {activeTab === 'last_2' && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => {
-                          if (!unlockedTabs.includes('situation_review')) {
-                            setUnlockedTabs(prev => [...prev, 'situation_review']);
-                          }
-                          setActiveTab('situation_review');
-                        }}
-                        className="text-[10px] bg-cyan-900/40 border border-cyan-800 text-cyan-300 px-3 py-1.5 rounded-full hover:bg-cyan-800 transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(8,145,178,0.2)] font-sans"
-                      >
-                        <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></span>
-                        状況整理を行う
-                      </button>
-                    </div>
+                  <div className="flex flex-col gap-1.5">
                     {!state.phase1Complete ? (
                       <InputField onSubmit={handleRiddleSubmit} placeholder="イラストの詳細名は何？" />
                     ) : (
