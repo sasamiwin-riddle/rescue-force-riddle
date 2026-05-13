@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ライクアルファベット",
+  title: "Like Alphabet",
   description: "WEB型謎解きゲーム",
 };
 
