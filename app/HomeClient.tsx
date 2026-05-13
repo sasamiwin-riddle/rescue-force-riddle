@@ -43,6 +43,7 @@ export default function Home() {
   const [s4Act, setS4Act] = useState("");
   const [s4View, setS4View] = useState("");
   const [last2Text, setLast2Text] = useState("");
+  const [isInputCollapsed, setIsInputCollapsed] = useState(false);
 
   const [stepStates, setStepStates] = useState<Record<Step, StepState>>({
     intro: {
@@ -418,7 +419,7 @@ export default function Home() {
           </div>
         ) : activeTab === 'manual' ? (
           /* MANUAL タブ専用のメインコンテンツ */
-          <div className="flex-1 overflow-y-auto p-4 bg-neutral-950">
+          <div key="manual" className="flex-1 overflow-y-auto p-4 bg-neutral-950">
             <div className="flex flex-col gap-4 pb-8 max-w-md mx-auto">
               {/* 画像表示セクション */}
               <div className="grid grid-cols-2 gap-2 mb-4">
@@ -518,7 +519,7 @@ export default function Home() {
           </div>
         ) : (
           /* 状況整理タブ専用のUI */
-          <div className="flex-1 overflow-y-auto p-4 bg-neutral-950 font-sans">
+          <div key="situation_review" className="flex-1 overflow-y-auto p-4 bg-neutral-950 font-sans">
             <div className="max-w-md mx-auto space-y-6">
               <div className="text-center space-y-2">
                 <h3 className="text-cyan-400 font-bold text-lg tracking-tighter uppercase italic">状況整理シート</h3>
@@ -645,8 +646,9 @@ export default function Home() {
               )}
               <button
                 onClick={() => setActiveTab('last_2')}
-                className="w-full bg-neutral-900/50 text-neutral-500 py-3 rounded font-bold border border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300 transition-colors text-xs uppercase tracking-widest mt-4"
+                className="w-full bg-cyan-900/30 text-cyan-400 py-3 rounded font-bold border border-cyan-800 hover:bg-cyan-800/50 hover:text-cyan-100 transition-all text-xs uppercase tracking-[0.2em] mt-10 shadow-[0_0_15px_rgba(8,145,178,0.1)] flex items-center justify-center gap-2"
               >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
                 LAST 2に戻る
               </button>
             </div>
@@ -654,14 +656,25 @@ export default function Home() {
         )}
 
         {/* Input / Action Area */}
-        {activeTab !== 'manual' && (
-          <div className="bg-neutral-900 border-t border-neutral-700 p-4 shrink-0">
+        {activeTab !== 'manual' && activeTab !== 'situation_review' && (
+          <div className={`bg-neutral-900 border-t border-neutral-700 p-4 shrink-0 transition-all duration-300 relative ${isInputCollapsed ? 'h-[60px]' : ''}`}>
+            {/* Collapse Toggle Button */}
             {!state.isCleared && (
+              <button
+                onClick={() => setIsInputCollapsed(!isInputCollapsed)}
+                className="absolute -top-10 right-4 bg-neutral-900/80 border border-neutral-700 text-neutral-400 text-[10px] px-3 py-1.5 rounded-t-md hover:text-cyan-400 transition-colors flex items-center gap-2 backdrop-blur-sm shadow-[-5px_-5px_10px_rgba(0,0,0,0.2)]"
+              >
+                <span className={`w-2 h-2 rounded-full ${isInputCollapsed ? 'bg-cyan-500' : 'bg-red-500'}`}></span>
+                {isInputCollapsed ? '回答欄: OPEN' : '回答欄: CLOSE'}
+              </button>
+            )}
+
+            {!state.isCleared && !isInputCollapsed && (
               <>
                 <div className="flex justify-end items-end mb-2">
                   <button
                     onClick={handleHelp}
-                    disabled={!HINTS[activeTab] || HINTS[activeTab].length === 0}
+                    disabled={!HINTS[activeTab] || HINTS[activeTab].length === 0 || (activeTab === 'last_2' && state.phase1Complete)}
                     className="text-xs bg-neutral-800 border border-neutral-600 text-neutral-300 px-2 py-1 rounded hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     先輩HELP
