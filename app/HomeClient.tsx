@@ -11,6 +11,44 @@ import { HINTS } from './hints';
 
 const ALL_STEPS: Step[] = ['intro', 'step0', 'step0_2', 'manual', 'step1_1', 'step1_2', 'step2_1', 'step2_2', 'step3_1', 'step3_2', 'step4_1', 'step4_2', 'last_1', 'last_2', 'last_3', 'last_4', 'situation_review', 'clear'];
 
+const ALL_ITEM_OPTIONS = [
+  { value: "灰皿", label: "灰皿", step: 1 },
+  { value: "茶碗", label: "茶碗", step: 1 },
+  { value: "茶筅", label: "茶筅（お茶をかき混ぜる道具）", step: 1 },
+  { value: "S字フック", label: "S字フック", step: 1 },
+  { value: "制服", label: "制服", step: 1 },
+  { value: "靴", label: "靴", step: 1 },
+  { value: "机", label: "机", step: 1 },
+  { value: "掛け軸", label: "掛け軸", step: 1 },
+  { value: "ふすま", label: "ふすま", step: 1 },
+  { value: "ドライヤー", label: "ドライヤー", step: 2 },
+  { value: "ハブラシ", label: "ハブラシ", step: 2 },
+  { value: "浴衣", label: "浴衣", step: 2 },
+  { value: "畳", label: "畳", step: 2 },
+  { value: "カミソリ", label: "カミソリ", step: 2 },
+  { value: "墨汁", label: "墨汁", step: 3 },
+  { value: "饅頭", label: "饅頭", step: 3 },
+  { value: "扇子", label: "扇子", step: 3 },
+  { value: "イス", label: "イス", step: 3 },
+  { value: "茎", label: "茎", step: 3 },
+  { value: "木", label: "木", step: 3 },
+  { value: "盆", label: "盆", step: 3 },
+  { value: "缶", label: "缶", step: 3 },
+  { value: "蜘蛛", label: "蜘蛛", step: 3 },
+  { value: "水", label: "水", step: 4 },
+  { value: "冷蔵庫", label: "冷蔵庫", step: 4 },
+];
+
+const getItemOptions = (activeTab: string) => {
+  if (activeTab.startsWith('last') || activeTab === 'clear') {
+    return ALL_ITEM_OPTIONS;
+  }
+  const stepMatch = activeTab.match(/step(\d)/);
+  if (!stepMatch) return ALL_ITEM_OPTIONS;
+  const stepNum = parseInt(stepMatch[1]);
+  return ALL_ITEM_OPTIONS.filter(opt => opt.step <= stepNum);
+};
+
 interface StepState {
   messages: { sender: '救助システム' | '先輩'; text: string; image?: string }[];
   phase1Complete: boolean;
@@ -44,12 +82,13 @@ export default function Home() {
   const [s4View, setS4View] = useState("");
   const [last2Text, setLast2Text] = useState("");
   const [isInputCollapsed, setIsInputCollapsed] = useState(false);
+  const [expandedClearedImages, setExpandedClearedImages] = useState<Record<string, boolean>>({});
 
   const [stepStates, setStepStates] = useState<Record<Step, StepState>>({
     intro: {
       messages: [
         { sender: '救助システム', text: '【救助システムログ】\n空間の異常を検知。救助対象者の生体信号を確認しました。' },
-        { sender: '先輩', text: 'やあ新人くん。早速だがこれから現場研修だ。私は君のサポートを担当する先見悟（さきみさとる）だ。' },
+        { sender: '先輩', text: 'やあ新人くん。早速だがこれから現場研修だ。私は君をサポートする先見悟（さきみさとる）だ。' },
         { sender: '先輩', text: '君も知っての通り、私たちの仕事は閉鎖空間に閉じ込められた人物の救出だ。マニュアルを見せる前に、まずは1つ謎を解いてもらおう' },
         { sender: '先輩', text: '救助対象者の安全を考慮して、180分以内に救出するぞ！' },
         { sender: '先輩', text: '心配ない。新人内で謎解き力トップの君なら大丈夫だ。私の指示に従って、操作を進めてくれ。' }
@@ -66,35 +105,35 @@ export default function Home() {
       ], phase1Complete: false, isCleared: false
     },
     manual: { messages: [{ sender: '先輩', text: '' }], phase1Complete: true, isCleared: false },
-    step1_1: { messages: [{ sender: '先輩', text: 'ここまで30分。ここからは繰り返しの手順でハッキングを進めていく。まずは救助システムが出力する謎を解いてくれ。' }], phase1Complete: false, isCleared: false },
-    step1_2: { messages: [{ sender: '先輩', text: 'マニュアルの確認は済んだか？では「s」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ。' }], phase1Complete: true, isCleared: false },
-    step2_1: { messages: [{ sender: '先輩', text: 'お見事！この流れの繰り返しだ。' }, { sender: '先輩', text: 'ここまで54分、順調だな。' }], phase1Complete: false, isCleared: false },
-    step2_2: { messages: [{ sender: '先輩', text: 'よし、正解だ！マニュアルの通り、指示がない場合は大文字アルファベットに変換する。アルファベットの12番目「L」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ。' }], phase1Complete: true, isCleared: false },
-    step3_1: { messages: [{ sender: '先輩', text: '重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ！' }, { sender: '先輩', text: 'ここまで90分、順調だな。' }], phase1Complete: false, isCleared: false },
-    step3_2: { messages: [{ sender: '先輩', text: '冴えてるね！さあ、「h」のシルエットに最も近いアイテムを登場したイラストの中から選ぼう。' }], phase1Complete: true, isCleared: false },
-    step4_1: { messages: [{ sender: '先輩', text: 'ここまで120分。いよいよ最後の謎だ。' }], phase1Complete: false, isCleared: false },
+    step1_1: { messages: [{ sender: '先輩', text: 'ここまで30分。ここからは繰り返しの手順でハッキングを進めていく。まずは救助システムが出力する謎を解いてくれ' }], phase1Complete: false, isCleared: false },
+    step1_2: { messages: [{ sender: '先輩', text: 'では「s」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ' }], phase1Complete: true, isCleared: false },
+    step2_1: { messages: [{ sender: '先輩', text: 'お見事！この流れの繰り返しだ' }, { sender: '先輩', text: 'ここまで54分、順調だな' }], phase1Complete: false, isCleared: false },
+    step2_2: { messages: [{ sender: '先輩', text: 'よし、正解だ！マニュアルの通り、指示がない場合は大文字アルファベットに変換する。アルファベットの12番目「L」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ' }], phase1Complete: true, isCleared: false },
+    step3_1: { messages: [{ sender: '先輩', text: '重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ！' }, { sender: '先輩', text: 'ここまで90分、順調だな' }], phase1Complete: false, isCleared: false },
+    step3_2: { messages: [{ sender: '先輩', text: '冴えてるね！さあ、「h」のシルエットに最も近いアイテムを登場したイラストの中から選ぼう' }], phase1Complete: true, isCleared: false },
+    step4_1: { messages: [{ sender: '先輩', text: 'ここまで120分。いよいよ最後の謎だ' }], phase1Complete: false, isCleared: false },
     step4_2: {
-      messages: [{ sender: '先輩', text: 'また「L」か。投入したアイテムは消滅する。二つも同じドライヤーがあるか分からない。今追加された機能の「一旦転送」を使う方が良さげだな。マニュアルとイラストを確認して、最後のアイテムはどうすれば良いか考えてくれ' },
-      { sender: '先輩', text: '壊したり分解したりするとアイテムは判定されないから気をつけるんだ' },
+      messages: [{ sender: '先輩', text: 'また「L」か。投入したアイテムは消滅する。二つも同じドライヤーがあるかは分からない。今追加された機能の「一旦転送」を使う方が良さげだな。イラストをよーく観察して、最後のアイテムはどうすれば良いか考えてくれ' },
+      { sender: '先輩', text: '普段の用途で発生しない形になったり、壊したり分解したりするとアイテムは判定されないから気をつけるんだ' },
       ], phase1Complete: true, isCleared: false
     },
-    last_1: { messages: [{ sender: '先輩', text: 'ここまで144分か。いよいよ最後の山場だ。' }, { sender: '先輩', text: '私の推測だと答えではないと思うが、念のため可能性を潰しておきたい。「ドライヤー」を再度選択してくれ' }], phase1Complete: true, isCleared: false },
+    last_1: { messages: [{ sender: '先輩', text: 'ここまで144分か。踏ん張りどころだ' }, { sender: '先輩', text: '私の推測だと答えではないと思うが、念のため可能性を潰しておきたい。「ドライヤー」を再度選択してくれ' }], phase1Complete: true, isCleared: false },
     last_2: {
-      messages: [{ sender: '先輩', text: 'マニュアルの2ページ目は確認できたか？申し訳ない、この救助システムのバージョンだと、イラストと実物が異なることを失念していた' },
-      { sender: '先輩', text: 'だが、何のアイテムが良いか私はすでに検討がついた。この謎は救助システムから出力された謎に少し書き加えたものだ。私のこの謎を解いて、まずは状況を整理してみてくれ' },
-      { sender: '先輩', text: 'もしもイラスト数最大10個が適用されていなかった場合、こうだったかもしれないと予測したものだ。謎の緑色の部分が書き加えた部分だ。変化を加えたことで、1つだけより具体的になったイラストの名称を答えてくれ' },
+      messages: [{ sender: '先輩', text: 'マニュアル2ページ目は申し訳ない。この救助システムのバージョンだと、イラストと実物が異なることを失念していた' },
+      { sender: '先輩', text: 'だが、何のアイテムが良いか私はすでに検討がついた。この謎は救助システムから出力された謎に少し書き加えたものだ。私のこの謎を解いて、まずは自分で状況を整理してみてくれ' },
+      { sender: '先輩', text: 'この謎は、もしもイラスト数最大10個が適用されていなかった場合、こうだったかもしれないと予測したものだ。謎の緑色の部分が書き加えた部分だ。変化を加えたことで、1つだけより具体的になったイラストの名称を答えてくれ' },
       { sender: '先輩', text: 'ヒントを聞いても謎が解けなかったり、謎が解けても理由が分からない場合、「状況整理を行う」と言ってくれ' }], phase1Complete: false, isCleared: false
     },
     last_3: {
-      messages: [{ sender: '先輩', text: 'その通りだ。その根拠がこの資料だ。一度誤答した際に解放されたスキャン機能だ' },
-      { sender: '先輩', text: '5分間で、登場済みイラストのアイテムに触れた順に記録されている。2行目の記録を見ると、アナウンスを受けてハッキング液にアイテムを提出しに行く際、明らかに外に出ていそうだ' },
+      messages: [{ sender: '先輩', text: 'その通りだ。その根拠がこの上部の資料だ。開いて確認してくれ。一度誤答した際に解放されたスキャン機能だ' },
+      { sender: '先輩', text: '5分間隔で、登場済みイラストのアイテムに触れた順に記録されている。3行目の記録を見ると、アナウンスを受けてハッキング液にアイテムを提出しに行く際、明らかに外に出ていそうだ' },
       { sender: '先輩', text: 'そしてマニュアル液の違和感を振り返ると、閉鎖空間の場所について一つの結論に辿り着いた' },
-      { sender: '先輩', text: '閉鎖空間の場所や救助対象者のスキャン結果に着目して、最後のアイテムを選択肢から選び、詳細な名称まで答えてくれ。' }], phase1Complete: false, isCleared: false
+      { sender: '先輩', text: '閉鎖空間の場所や救助対象者のスキャン結果に着目して、最後のアイテムを選択肢から選び、一発でこれと分かる詳細な名称も答えてくれ。必要であれば「状況整理を行う」と言ってくれ' }], phase1Complete: false, isCleared: false
     },
     last_4: {
-      messages: [{ sender: '先輩', text: 'ああ、おそらく座椅子だ。だが、写真撮影機能は名称を指定しても発動できない。撮りたいアイテムに触れているものを指定することで該当するのが一つのみにする必要がある' },
-      { sender: '先輩', text: 'ふすまを開けて露天風呂から部屋へ入ったと考えると、畳の上にイスが存在しているだろう。もう一つだけ自由入力で指定ができる' },
-      { sender: '先輩', text: '座椅子にしか触れていないであろうものを自由入力で答えてくれ。イラストに登場している必要はない' }
+      messages: [{ sender: '先輩', text: 'ああ、おそらく座椅子だ。だが、もう誤答はできない。写真撮影機能を駆使して確実にする必要があるが、写真撮影は名称を指定しても発動できない。撮りたいアイテムに触れているものを指定し、正解のシルエットのアイテムに絞ることができたら撮影される' },
+      { sender: '先輩', text: 'LAST3で確認したスキャン結果の画像を見てくれ。ふすまを開けて露天風呂から部屋へ入ったと考えると、畳の上に座椅子が存在しているだろう。加えてもう一つだけ自由入力で指定がする必要がある' },
+      { sender: '先輩', text: '救助対象者が現在座っているかは不明だ。当てにはできない。状況から推測して、座椅子に触れているものを自由入力で答えてくれ。イラストに登場している必要はない' }
       ], phase1Complete: false, isCleared: false
     },
     situation_review: { messages: [], phase1Complete: false, isCleared: false },
@@ -114,6 +153,13 @@ export default function Home() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [activeTab, stepStates[activeTab]?.messages]);
+
+  useEffect(() => {
+    if (activeTab === 'last_3' && expandedClearedImages['last_3'] === undefined) {
+      setExpandedClearedImages(prev => ({ ...prev, last_3: false }));
+      setIsInputCollapsed(true);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeTab === 'last_4') {
@@ -236,11 +282,7 @@ export default function Home() {
         } else {
           addMessage(activeTab, '救助システム', `> 謎の回答: ${answer}`);
         }
-        addMessage(activeTab, '救助システム', res.message);
-
-        if (activeTab === 'last_2') {
-          addMessage(activeTab, '先輩', 'これまで出たイラストのアイテムが答えだが、複数あったり形が違う場合もある。聞いた時に一発でこれと分かる単語で回答するんだ');
-        }
+        if (res.message) addMessage(activeTab, '救助システム', res.message);
 
         const updates: Partial<StepState> = { errorType: undefined };
         if (res.isPhase1Complete) updates.phase1Complete = true;
@@ -261,9 +303,13 @@ export default function Home() {
         // Step 0-2 特殊処理: 救助システムからのメッセージ
         if (activeTab === 'step0_2' && res.success) {
           addMessage('step0_2', '救助システム', 'ハッキング液作成完了');
+          addMessage('step0_2', '先輩', 'よし、ここからが本番だ。まずはマニュアルを見てくれ');
         }
 
         updateStepState(activeTab, updates);
+
+        // 正解時に画像を最小化
+        setExpandedClearedImages(prev => ({ ...prev, [activeTab]: false }));
       } else {
         // 不正解時はチャットに残さず、先輩からのポップアップを表示
         setPopupMessage('先輩：もう一度よく考えて');
@@ -284,7 +330,9 @@ export default function Home() {
         } else if (selection === 'ドライヤー_forced') {
           displayItem = 'ドライヤー';
         }
-        addMessage(activeTab, '救助システム', `> アナウンス: ${displayItem}`);
+        if (activeTab !== 'last_4') {
+          addMessage(activeTab, '救助システム', `> アナウンス: ${displayItem}`);
+        }
       }
 
       let itemName = selection;
@@ -304,6 +352,7 @@ export default function Home() {
     try {
       const res = await validateItemSelection({ item, position, action, view }, activeTab);
       if (res.success) {
+        addMessage(activeTab, '救助システム', `> アナウンス:冷蔵庫`);
         addMessage(activeTab, '救助システム', `アクション：一旦転送、残り誤答回数は2回です`);
       }
       handleActionResponse(res, item);
@@ -319,10 +368,15 @@ export default function Home() {
         addMessage(activeTab, '救助システム', `「${itemName}」が「${res.answerChar}」と判定されました。`);
       } else if (activeTab === 'step4_2') {
         addMessage(activeTab, '救助システム', 'アイテム投入待機...');
+      } else if (activeTab === 'last_4') {
+        // No message for last_4
       } else {
-        addMessage(activeTab, '救助システム', `SUCCESS: ${res.message}`);
+        if (res.message) addMessage(activeTab, '救助システム', `SUCCESS: ${res.message}`);
       }
       updateStepState(activeTab, { isCleared: true, errorType: undefined, nextStep: res.nextStep });
+
+      // 正解時に画像を最小化
+      setExpandedClearedImages(prev => ({ ...prev, [activeTab]: false }));
 
       if (res.errorType === 'fridge_1door') {
         // 画像付きメッセージ
@@ -341,11 +395,11 @@ export default function Home() {
       }
     } else {
       if (res.errorType === 'dryer_t') {
-        addMessage(activeTab, '救助システム', `アナウンス: ドライヤー`);
+        addMessage(activeTab, '救助システム', `> アナウンス: ドライヤー`);
         addMessage(activeTab, '救助システム', 'アイテム投入待機...');
         addMessage(activeTab, '救助システム', `「ドライヤー」が「${res.answerChar}」と判定されました。残り誤答回数0回です。`, '/assets/step4_dryer_t.png');
         addMessage(activeTab, '先輩', 'LというよりかT字型ドライヤーだな。だが、これで確率は高まった。');
-        addMessage(activeTab, '先輩', '3回失敗したことで、自由入力機能が解放された。ん？おっとすまない、マニュアルの2ページ目の連携が漏れていた。マニュアルを再度確認してみてくれ');
+        addMessage(activeTab, '先輩', '3回失敗したことで、スキャン機能が廃止され、撮影機能が解放された。ん？おっとすまない、マニュアルの2ページ目の連携が漏れていた。マニュアルを再度確認してみてくれ');
         setManual2Unlocked(true);
         updateStepState('manual', { isCleared: false });
         if (res.nextStep && !unlockedTabs.includes(res.nextStep)) {
@@ -423,11 +477,30 @@ export default function Home() {
 
         {/* Riddle Image Section */}
         {((activeTab === 'step0' || activeTab === 'step0_2' || activeTab.endsWith('_1') || activeTab === 'last_2' || activeTab === 'last_3') && activeTab !== 'last_1' && activeTab !== 'last_4') || (activeTab === 'last_4' && state.isCleared) ? (
-          <div className="p-4 bg-neutral-950 flex justify-center border-b border-neutral-800 shrink-0">
-            <div className="w-full max-w-sm aspect-video bg-neutral-800 rounded flex items-center justify-center relative overflow-hidden">
-              <ImageViewer step={activeTab} onImageClick={setExpandedImage} />
+          expandedClearedImages[activeTab] === false ? (
+            <div
+              onClick={() => setExpandedClearedImages(prev => ({ ...prev, [activeTab]: true }))}
+              className="p-2 bg-neutral-900 border-b border-neutral-800 flex items-center justify-center gap-2 cursor-pointer hover:bg-neutral-800 transition-colors shrink-0 group"
+            >
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest group-hover:text-cyan-400 transition-colors">
+                [ 画像：OPEN ]
+              </span>
             </div>
-          </div>
+          ) : (
+            <div className="p-4 bg-neutral-950 flex flex-col items-center border-b border-neutral-800 shrink-0 relative">
+              <div className="w-full max-w-sm aspect-video bg-neutral-800 rounded flex items-center justify-center relative overflow-hidden shadow-2xl">
+                <ImageViewer step={activeTab} onImageClick={setExpandedImage} />
+              </div>
+              <button
+                onClick={() => setExpandedClearedImages(prev => ({ ...prev, [activeTab]: false }))}
+                className="mt-3 text-[10px] text-neutral-500 hover:text-cyan-400 font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6" /></svg>
+                画像：CLOSE
+              </button>
+            </div>
+          )
         ) : null}
 
         {activeTab !== 'manual' && activeTab !== 'situation_review' ? (
@@ -450,33 +523,8 @@ export default function Home() {
                       onChange={setSelectedItem}
                       placeholder="アイテム"
                       className="!bg-transparent !border-none !text-cyan-400 !text-center !p-0 !h-auto !shadow-none"
-                      options={[
-                        { value: "灰皿", label: "灰皿" },
-                        { value: "茶碗", label: "茶碗" },
-                        { value: "茶筅", label: "茶筅" },
-                        { value: "S字フック", label: "S字フック" },
-                        { value: "制服", label: "制服" },
-                        { value: "靴", label: "靴" },
-                        { value: "机", label: "机" },
-                        { value: "掛け軸", label: "掛け軸" },
-                        { value: "ふすま", label: "ふすま" },
-                        { value: "ドライヤー", label: "ドライヤー" },
-                        { value: "ハブラシ", label: "ハブラシ" },
-                        { value: "浴衣", label: "浴衣" },
-                        { value: "畳", label: "畳" },
-                        { value: "カミソリ", label: "カミソリ" },
-                        { value: "墨汁", label: "墨汁" },
-                        { value: "饅頭", label: "饅頭" },
-                        { value: "扇子", label: "扇子" },
-                        { value: "イス", label: "イス" },
-                        { value: "茎", label: "茎" },
-                        { value: "木", label: "木" },
-                        { value: "盆", label: "盆" },
-                        { value: "缶", label: "缶" },
-                        { value: "蜘蛛", label: "蜘蛛" },
-                        { value: "水", label: "水" },
-                        { value: "冷蔵庫", label: "冷蔵庫" },
-                      ]}
+                      options={getItemOptions(activeTab)}
+                      disabled={true}
                     />
                   </div>
                   <span>に触れている</span>
@@ -497,7 +545,7 @@ export default function Home() {
                   onClick={() => handleItemSelect({ item: selectedItem, text: last2Text })}
                   className="mx-auto px-10 py-3 bg-cyan-900/40 border border-cyan-500 text-cyan-100 rounded-full font-bold hover:bg-cyan-500 hover:text-black transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)] text-sm tracking-widest uppercase"
                 >
-                  転送実行
+                  撮影実行
                 </button>
               </div>
             )}
@@ -535,7 +583,7 @@ export default function Home() {
                     <div className="animate-in fade-in duration-700">
                       <p className="text-cyan-400 font-bold underline mb-1">■ 救助対象者をリアルタイムスキャン (情報取得)</p>
                       <p className="text-xs text-neutral-400">異常空間内の人物と空気の状態を常に取得します。</p>
-                      <p className="text-xs text-neutral-400">最新スキャン結果：女性一人、高校生。体温正常。気温8℃。湿度40%<br />現在触れているもの：浴衣、畳</p>
+                      <p className="text-xs text-neutral-400">最新スキャン結果：女性一人、高校生。体温正常。気温8℃。湿度40%</p>
                     </div>
                   )}
 
@@ -555,8 +603,8 @@ export default function Home() {
 
                   {manual2Unlocked && (
                     <div className="animate-in fade-in duration-700 border-t border-cyan-900/30 pt-2">
-                      <p className="text-pink-400 font-bold underline mb-1">■ 自由入力モード</p>
-                      <p className="text-xs text-neutral-400">4文字以内の自由なテキストで対象者へアナウンスできます。</p>
+                      <p className="text-pink-400 font-bold underline mb-1">■ 写真撮影</p>
+                      <p className="text-xs text-neutral-400">3回誤答でスキャン機能が廃止され、最後の砦として解放される。<br />アイテムの選択肢を選んだ後、そのアイテムが現在触れているもの二つだけ指定して、正解のシルエットのアイテムに絞ることができたら撮影できる</p>
                     </div>
                   )}
                 </div>
@@ -727,15 +775,15 @@ export default function Home() {
               {reviewAnswers.who === '37' && reviewAnswers.timing === 'STEP2' && reviewAnswers.where === 'お風呂' && reviewAnswers.miss === '8' && reviewAnswers.item === '元々' && reviewAnswers.q5 === '温泉' && reviewAnswers.q6 === '旅館' && (
                 <div className="animate-in zoom-in duration-500 bg-green-900/20 border border-green-500/50 p-4 rounded-lg text-center">
                   <p className="text-green-400 font-bold tracking-widest text-sm">状況整理完了</p>
-                  <p className="text-xs text-neutral-300 mt-2">LAST 2に戻り、答えを導いてください。</p>
+                  <p className="text-xs text-neutral-300 mt-2">{unlockedTabs.includes('last_3') ? 'LAST 3' : 'LAST 2'}に戻り、答えを導いてください。</p>
                 </div>
               )}
               <button
-                onClick={() => setActiveTab('last_2')}
+                onClick={() => setActiveTab(unlockedTabs.includes('last_3') ? 'last_3' : 'last_2')}
                 className="w-full bg-cyan-900/30 text-cyan-400 py-3 rounded font-bold border border-cyan-800 hover:bg-cyan-800/50 hover:text-cyan-100 transition-all text-xs uppercase tracking-[0.2em] mt-10 shadow-[0_0_15px_rgba(8,145,178,0.1)] flex items-center justify-center gap-2"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-                LAST 2に戻る
+                {unlockedTabs.includes('last_3') ? 'LAST 3' : 'LAST 2'}に戻る
               </button>
             </div>
           </div>
@@ -758,7 +806,7 @@ export default function Home() {
             {!state.isCleared && !isInputCollapsed && (
               <>
                 <div className="flex items-center gap-2 px-1 mb-1.5">
-                  {activeTab === 'last_2' && (
+                  {(activeTab === 'last_2' || activeTab === 'last_3') && (
                     <button
                       onClick={() => {
                         if (!unlockedTabs.includes('situation_review')) {
@@ -806,46 +854,14 @@ export default function Home() {
                 )}
 
                 {/* フェーズ2: アイテム選択 (stepX_2) */}
-                {activeTab.endsWith('_2') && activeTab !== 'last_2' && (
+                {activeTab.endsWith('_2') && activeTab !== 'last_2' && activeTab !== 'step0_2' && (
                   <div className="flex gap-2">
                     <CustomSelect
                       value={selectedItem}
                       onChange={setSelectedItem}
                       placeholder="アイテムを選択"
                       className="flex-1"
-                      options={[
-                        { value: "灰皿", label: "灰皿" },
-                        { value: "茶碗", label: "茶碗" },
-                        { value: "茶筅", label: "茶筅" },
-                        { value: "S字フック", label: "S字フック" },
-                        { value: "制服", label: "制服" },
-                        { value: "靴", label: "靴" },
-                        { value: "机", label: "机" },
-                        { value: "掛け軸", label: "掛け軸" },
-                        { value: "ふすま", label: "ふすま" },
-                        ...((['step2_2', 'step3_2', 'step4_2'].includes(activeTab)) ? [
-                          { value: "ドライヤー", label: "ドライヤー" },
-                          { value: "ハブラシ", label: "ハブラシ" },
-                          { value: "浴衣", label: "浴衣" },
-                          { value: "畳", label: "畳" },
-                          { value: "カミソリ", label: "カミソリ" },
-                        ] : []),
-                        ...((['step3_2', 'step4_2'].includes(activeTab)) ? [
-                          { value: "墨汁", label: "墨汁" },
-                          { value: "饅頭", label: "饅頭" },
-                          { value: "扇子", label: "扇子" },
-                          { value: "イス", label: "イス" },
-                          { value: "茎", label: "茎" },
-                          { value: "木", label: "木" },
-                          { value: "盆", label: "盆" },
-                          { value: "缶", label: "缶" },
-                          { value: "蜘蛛", label: "蜘蛛" },
-                        ] : []),
-                        ...((activeTab === 'step4_2') ? [
-                          { value: "水", label: "水" },
-                          { value: "冷蔵庫", label: "冷蔵庫" },
-                        ] : []),
-                      ]}
+                      options={getItemOptions(activeTab)}
                     />
                     {activeTab !== 'step4_2' && (
                       <button
@@ -951,33 +967,7 @@ export default function Home() {
                           onChange={setSelectedItem}
                           placeholder="選択..."
                           className="w-full"
-                          options={[
-                            { value: "灰皿", label: "灰皿" },
-                            { value: "茶碗", label: "茶碗" },
-                            { value: "茶筅", label: "茶筅" },
-                            { value: "靴", label: "靴" },
-                            { value: "机", label: "机" },
-                            { value: "掛け軸", label: "掛け軸" },
-                            { value: "ふすま", label: "ふすま" },
-                            { value: "S字フック", label: "S字フック" },
-                            { value: "制服", label: "制服" },
-                            { value: "ドライヤー", label: "ドライヤー" },
-                            { value: "ハブラシ", label: "ハブラシ" },
-                            { value: "浴衣", label: "浴衣" },
-                            { value: "畳", label: "畳" },
-                            { value: "カミソリ", label: "カミソリ" },
-                            { value: "墨汁", label: "墨汁" },
-                            { value: "饅頭", label: "饅頭" },
-                            { value: "扇子", label: "扇子" },
-                            { value: "イス", label: "イス" },
-                            { value: "茎", label: "茎" },
-                            { value: "木", label: "木" },
-                            { value: "盆", label: "盆" },
-                            { value: "缶", label: "缶" },
-                            { value: "蜘蛛", label: "蜘蛛" },
-                            { value: "水", label: "水" },
-                            { value: "冷蔵庫", label: "冷蔵庫" },
-                          ]}
+                          options={getItemOptions(activeTab)}
                         />
                       </div>
 
@@ -1020,7 +1010,7 @@ export default function Home() {
                     onClick={() => setActiveTab(state.nextStep!)}
                     className="w-full bg-cyan-600/40 text-cyan-100 py-3 rounded font-bold border border-cyan-500 hover:bg-cyan-500 transition-all uppercase tracking-widest shadow-[0_0_15px_rgba(8,145,178,0.2)] animate-in fade-in zoom-in"
                   >
-                    次へ進む
+                    {activeTab === 'last_4' ? '結果確認' : '次へ進む'}
                   </button>
                 ) : (
                   <div className="w-full text-center text-cyan-500 py-2 border border-cyan-800 bg-cyan-900/20 rounded">
@@ -1077,7 +1067,7 @@ export default function Home() {
     <main className="flex h-screen w-full max-w-2xl flex-col bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 mx-auto border-x border-neutral-800 overflow-hidden">
       {/* Header */}
       <h1 className="text-xl font-bold text-cyan-400 p-3 text-center tracking-widest border-b border-cyan-900 w-full bg-black shrink-0">
-        Like Alphabet
+        LIKE ALPHABET
       </h1>
 
       {/* Navigation */}
@@ -1087,12 +1077,18 @@ export default function Home() {
       {activeTab === 'clear' ? (
         <div className="flex-1 overflow-y-auto p-8 text-center flex flex-col items-center gap-8 animate-in fade-in duration-1000">
           <div className="w-full flex flex-col items-center justify-start gap-8 min-h-min pb-32">
-            <div className="max-w-sm w-full animate-in zoom-in duration-1000 delay-300">
+            <div className="max-w-sm w-full animate-in zoom-in duration-1000 delay-300 space-y-8">
               <img
                 src="/assets/clear_item.png"
                 alt="Clear Item"
                 className="w-full rounded-lg border border-cyan-500/50 shadow-[0_0_40px_rgba(6,182,212,0.2)] cursor-zoom-in hover:scale-[1.02] transition-transform"
                 onClick={() => setExpandedImage('/assets/clear_item.png')}
+              />
+              <img
+                src="/assets/clear2.png"
+                alt="Clear Item 2"
+                className="w-full rounded-lg border border-cyan-500/50 shadow-[0_0_40px_rgba(6,182,212,0.2)] cursor-zoom-in hover:scale-[1.02] transition-transform animate-in zoom-in duration-1000 delay-500"
+                onClick={() => setExpandedImage('/assets/clear2.png')}
               />
             </div>
             <div className="space-y-4">

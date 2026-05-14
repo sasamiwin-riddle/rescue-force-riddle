@@ -1,20 +1,20 @@
 import HomeClient from './HomeClient';
 import { Metadata } from 'next';
 
-export async function generateMetadata({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
+export async function generateMetadata({
+  searchParams
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }): Promise<Metadata> {
   const params = await searchParams;
   const isClear = params.clear === 'true';
   const ogImage = isClear ? "/assets/clear.png" : "/assets/top.png";
 
   return {
-    title: "Like Alphabet",
+    title: "LIKE ALPHABET",
     description: "WEB型謎解きゲーム",
     openGraph: {
-      title: "Like Alphabet",
+      title: "LIKE ALPHABET",
       description: "WEB型謎解きゲーム",
       images: [
         {
@@ -26,7 +26,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: "Like Alphabet",
+      title: "LIKE ALPHABET",
       description: "WEB型謎解きゲーム",
       images: [ogImage],
     },

@@ -4,7 +4,7 @@ export type Step = 'intro' | 'step0' | 'step0_2' | 'step1_1' | 'manual' | 'step1
 
 export interface ActionResponse {
   success: boolean;
-  message: string;
+  message?: string;
   isPhase1Complete?: boolean;
   nextStep?: Step;
   errorType?: 'wrong' | 'fridge_1door' | 'dryer_t';
@@ -46,14 +46,12 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
     else if (currentStep === 'last_2') {
       return {
         success: true,
-        message: '正解です。最終確認フェーズに移行します。',
         nextStep: 'last_3'
       };
     }
 
-    let successMessage = '正解です。該当するアイテムを選択してください。';
-    if (currentStep === 'step0') successMessage = '閉鎖空間内にハッキング液が用意できました。続いて、システムからの最終確認の謎を解いてください。';
-    if (currentStep === 'step0_2') successMessage = '認証完了。マニュアルを解放します。';
+    let successMessage = '正解です。該当するアイテムを選択してください';
+    if (currentStep === 'step0') successMessage = '閉鎖空間内にハッキング液が用意できました';
 
     return {
       success: true,
@@ -68,7 +66,7 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
     return { success: true, message: '[DEBUG] 正解です。', isPhase1Complete: true };
   }
 
-  return { success: false, message: '不正解です。もう一度画像を確認してください。', errorType: 'wrong' };
+  return { success: false, message: '不正解です。もう一度画像を確認してください', errorType: 'wrong' };
 }
 
 export async function validateItemSelection(selection: string | any, currentStep: Step): Promise<ActionResponse> {
@@ -134,7 +132,7 @@ export async function validateItemSelection(selection: string | any, currentStep
         const isItemCorrect = item === 'イス';
 
         if (isTextCorrect && isItemCorrect) {
-          return { success: true, message: '正解です。最終確認（LAST 4）に進みます。', nextStep: 'last_4' };
+          return { success: true, nextStep: 'last_4' };
         }
       }
       break;
@@ -143,10 +141,10 @@ export async function validateItemSelection(selection: string | any, currentStep
       if (typeof selection === 'object' && selection !== null) {
         const { item, text } = selection;
         if (!item || !text) break;
-        
+
         const normalizedText = normalizeString(text);
         if (item === '畳' && /^(座布団|ざぶとん|ザブトン)$/.test(normalizedText)) {
-          return { success: true, message: '全ての謎が解明され、閉鎖空間を掌握しました。救出を開始します。', nextStep: 'clear' };
+          return { success: true, nextStep: 'clear' };
         }
       }
       break;

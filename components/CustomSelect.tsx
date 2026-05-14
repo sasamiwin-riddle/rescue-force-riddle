@@ -13,9 +13,10 @@ interface CustomSelectProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
-export function CustomSelect({ options, value, onChange, placeholder = "選択してください", className = "" }: CustomSelectProps) {
+export function CustomSelect({ options, value, onChange, placeholder = "選択してください", className = "", disabled = false }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -35,8 +36,9 @@ export function CustomSelect({ options, value, onChange, placeholder = "選択�
     <div ref={containerRef} className={`relative ${className}`}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-black text-cyan-300 border border-cyan-800 rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-cyan-400 transition-colors h-[40px]"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`w-full flex items-center justify-between bg-black text-cyan-300 border border-cyan-800 rounded px-3 py-2 font-mono text-sm focus:outline-none focus:border-cyan-400 transition-colors h-[40px] ${disabled ? "opacity-50 cursor-not-allowed grayscale" : ""}`}
       >
         <span className={`truncate ${!selectedOption ? "text-neutral-500" : ""}`}>
           {selectedOption ? selectedOption.label : placeholder}
