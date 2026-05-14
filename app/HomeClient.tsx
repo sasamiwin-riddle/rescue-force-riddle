@@ -216,7 +216,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('rescue-force-progress-v2');
+    const saved = localStorage.getItem('rescue-force-progress-v3');
     if (saved) {
       const data = deobfuscate(saved);
       if (data) {
@@ -243,7 +243,7 @@ export default function Home() {
       reviewAnswers,
       showQ5
     };
-    localStorage.setItem('rescue-force-progress-v2', obfuscate(data));
+    localStorage.setItem('rescue-force-progress-v3', obfuscate(data));
   }, [isInitialized, activeTab, unlockedTabs, gameStarted, stepStates, manual2Unlocked, reviewAnswers, showQ5]);
 
 
@@ -365,7 +365,7 @@ export default function Home() {
     if (res.success) {
       if (['step1_2', 'step2_2', 'step3_2', 'last_2'].includes(activeTab)) {
         addMessage(activeTab, '救助システム', 'アイテム投入待機...');
-        addMessage(activeTab, '救助システム', `「${itemName}」が「${res.answerChar}」と判定されました。`);
+        addMessage(activeTab, '救助システム', `「${itemName ?? ''}」が「${res.answerChar ?? ''}」と判定されました。`);
       } else if (activeTab === 'step4_2') {
         addMessage(activeTab, '救助システム', 'アイテム投入待機...');
       } else if (activeTab === 'last_4') {
@@ -382,7 +382,7 @@ export default function Home() {
         // 画像付きメッセージ
         addMessage(activeTab, '先輩', '一旦こちらに転送されてきたが、冷蔵庫が1段しかない...。なるほど、そういうことか...。', '/assets/step4_error_1door.png');
         addMessage(activeTab, '先輩', 'これでもLと言えなくもない、念のため提出してみよう');
-        addMessage(activeTab, '救助システム', res.message);
+        if (res.message) addMessage(activeTab, '救助システム', res.message);
       }
 
       if (res.nextStep && !unlockedTabs.includes(res.nextStep)) {
