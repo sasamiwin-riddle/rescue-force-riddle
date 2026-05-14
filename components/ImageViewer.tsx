@@ -14,6 +14,9 @@ export function ImageViewer({ step, onImageClick }: ImageViewerProps) {
     case 'step0':
       imageSrc = "/assets/riddle_step0.png";
       break;
+    case 'step0_2':
+      imageSrc = "/assets/riddle_step0_2.png";
+      break;
     case 'step1_1':
       imageSrc = "/assets/riddle_step1.png";
       break;
@@ -28,6 +31,12 @@ export function ImageViewer({ step, onImageClick }: ImageViewerProps) {
       break;
     case 'last_2':
       imageSrc = "/assets/riddle_steplast.png";
+      break;
+    case 'last_3':
+      imageSrc = "/assets/riddle_last3.png";
+      break;
+    case 'last_4':
+      imageSrc = "/assets/clear_item.png";
       break;
     default:
       imageSrc = "/assets/placeholder.jpg";

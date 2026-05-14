@@ -1,6 +1,6 @@
 "use server";
 
-export type Step = 'intro' | 'step0' | 'step1_1' | 'manual' | 'step1_2' | 'step2_1' | 'step2_2' | 'step3_1' | 'step3_2' | 'step4_1' | 'step4_2' | 'last_1' | 'last_2' | 'situation_review' | 'clear';
+export type Step = 'intro' | 'step0' | 'step0_2' | 'step1_1' | 'manual' | 'step1_2' | 'step2_1' | 'step2_2' | 'step3_1' | 'step3_2' | 'step4_1' | 'step4_2' | 'last_1' | 'last_2' | 'last_3' | 'last_4' | 'situation_review' | 'clear';
 
 export interface ActionResponse {
   success: boolean;
@@ -19,9 +19,10 @@ function normalizeString(str: string): string {
     .toLowerCase();
 }
 
-// Riddle parts: stepX_1
+// Riddle parts: stepX_1, step0_2
 const RIDDLE_ANSWERS: Record<string, RegExp> = {
-  'step0': /^(フレッシュ|ふれっしゅ)$/,
+  'step0': /^(ぐらうんど|グラウンド)$/,
+  'step0_2': /^(赤|あか|アカ)$/,
   'step1_1': /^(s|S|ｓ|Ｓ|えす|エス)$/,
   'step2_1': /^(12|１２|える|エル)$/,
   'step3_1': /^(h|H|ｈ|Ｈ|えいち|エイチ)$/,
@@ -36,7 +37,8 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
   if (pattern && pattern.test(normalized)) {
     // Determine the next choice step
     let nextStep: Step | undefined;
-    if (currentStep === 'step0') nextStep = 'manual';
+    if (currentStep === 'step0') nextStep = 'step0_2';
+    else if (currentStep === 'step0_2') nextStep = 'manual';
     else if (currentStep === 'step1_1') nextStep = 'step1_2';
     else if (currentStep === 'step2_1') nextStep = 'step2_2';
     else if (currentStep === 'step3_1') nextStep = 'step3_2';
@@ -44,14 +46,18 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
     else if (currentStep === 'last_2') {
       return {
         success: true,
-        message: '残り誤答回数は0回です。「L」のシルエットに最も近いアイテムを回答してください',
-        isPhase1Complete: true,
+        message: '正解です。最終確認フェーズに移行します。',
+        nextStep: 'last_3'
       };
     }
 
+    let successMessage = '正解です。該当するアイテムを選択してください。';
+    if (currentStep === 'step0') successMessage = '閉鎖空間内にハッキング液が用意できました。続いて、システムからの最終確認の謎を解いてください。';
+    if (currentStep === 'step0_2') successMessage = '認証完了。マニュアルを解放します。';
+
     return {
       success: true,
-      message: currentStep === 'step0' ? '閉鎖空間内にハッキング液が用意できました' : '正解です。該当するアイテムを選択してください。',
+      message: successMessage,
       isPhase1Complete: true,
       nextStep
     };
@@ -118,8 +124,7 @@ export async function validateItemSelection(selection: string | any, currentStep
       }
       break;
 
-    case 'last_2':
-      // フェーズ2: アイテム選択 + テキスト入力
+    case 'last_3':
       if (typeof selection === 'object' && selection !== null) {
         const { item, text } = selection;
         if (!item || !text) break;
@@ -129,7 +134,19 @@ export async function validateItemSelection(selection: string | any, currentStep
         const isItemCorrect = item === 'イス';
 
         if (isTextCorrect && isItemCorrect) {
-          return { success: true, message: '全ての謎が解明され、閉鎖空間を掌握しました。救助対象者の転送を開始します...救出完了！', nextStep: 'clear', answerChar: 'L' };
+          return { success: true, message: '正解です。最終確認（LAST 4）に進みます。', nextStep: 'last_4' };
+        }
+      }
+      break;
+
+    case 'last_4':
+      if (typeof selection === 'object' && selection !== null) {
+        const { item, text } = selection;
+        if (!item || !text) break;
+        
+        const normalizedText = normalizeString(text);
+        if (item === '畳' && /^(座布団|ざぶとん|ザブトン)$/.test(normalizedText)) {
+          return { success: true, message: '全ての謎が解明され、閉鎖空間を掌握しました。救出を開始します。', nextStep: 'clear' };
         }
       }
       break;
@@ -137,3 +154,4 @@ export async function validateItemSelection(selection: string | any, currentStep
 
   return { success: false, message: 'エラー：対象が一致しません。', errorType: 'wrong' };
 }
+
