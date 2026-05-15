@@ -121,17 +121,16 @@ export default function Home() {
     last_2: {
       messages: [{ sender: '先輩', text: 'マニュアル2ページ目は申し訳ない。この救助システムのバージョンだと、イラストと実物が異なることを失念していた' },
       { sender: '先輩', text: 'だが、何のアイテムが良いか私はすでに検討がついた。この謎は救助システムから出力された謎に少し書き加えたものだ。私のこの謎を解いて、まずは自分で状況を整理してみてくれ' },
-      { sender: '先輩', text: 'この謎は、もしもイラスト数最大10個が適用されていなかった場合、こうだったかもしれないと予測したものだ。謎の緑色の部分が書き加えた部分だ。変化を加えたことで、1つだけより具体的になったイラストの名称を答えてくれ' },
-      { sender: '先輩', text: 'ヒントを聞いても謎が解けなかったり、謎が解けても理由が分からない場合、「状況整理を行う」と言ってくれ' }], phase1Complete: false, isCleared: false
+      { sender: '先輩', text: 'この謎は、もしもイラスト数最大10個が適用されていなかった場合、こうだったかもしれないと予測したものだ。謎の緑色の部分が書き加えた部分だ。変化を加えたことで、1つだけより具体的になったイラストの名称を答えてくれ' }], phase1Complete: false, isCleared: false
     },
     last_3: {
       messages: [{ sender: '先輩', text: 'その通りだ。その根拠がこの上部の資料だ。開いて確認してくれ。一度誤答した際に解放されたスキャン機能だ' },
-      { sender: '先輩', text: '5分間隔で、登場済みイラストのアイテムに触れた順に記録されている。3行目の記録を見ると、アナウンスを受けてハッキング液にアイテムを提出しに行く際、明らかに外に出ていそうだ' },
-      { sender: '先輩', text: 'そしてマニュアル液の違和感を振り返ると、閉鎖空間の場所について一つの結論に辿り着いた' },
-      { sender: '先輩', text: '閉鎖空間の場所や救助対象者のスキャン結果に着目して、最後のアイテムを選択肢から選び、一発でこれと分かる詳細な名称も答えてくれ。必要であれば「状況整理を行う」と言ってくれ' }], phase1Complete: false, isCleared: false
+      { sender: '先輩', text: '5分間隔で、登場済みイラストのアイテムに触れた順に記録されている。3行目の記録を見ると、アナウンスを受けてハッキング液にアイテムを提出しに行く際、ドアではなく窓から外に出ていそうだ' },
+      { sender: '先輩', text: '特徴的な1段式の冷蔵庫、マニュアル液の違和感を振り返ると、閉鎖空間の場所について一つの結論に辿り着いた' },
+      { sender: '先輩', text: '閉鎖空間の場所、救助対象者のスキャン結果に着目して、最後のアイテムを選択肢から選び、一発でこれと分かる詳細な名称を推測して答えてくれ。必要であれば「状況整理を行う」と言ってくれ' }], phase1Complete: false, isCleared: false
     },
     last_4: {
-      messages: [{ sender: '先輩', text: 'ああ、おそらく座椅子だ。だが、もう誤答はできない。写真撮影機能を駆使して確実にする必要があるが、写真撮影は名称を指定しても発動できない。撮りたいアイテムに触れているものを指定し、正解のシルエットのアイテムに絞ることができたら撮影される' },
+      messages: [{ sender: '先輩', text: 'ああ、おそらく座椅子だ。だが、もう誤答はできない。写真撮影機能を駆使して確実にする必要があるが、写真撮影は名称を指定しても発動できない。撮りたいアイテムに触れているものを指定し、正解のシルエットのアイテム1種類に絞ることができたら撮影される' },
       { sender: '先輩', text: 'LAST3で確認したスキャン結果の画像を見てくれ。ふすまを開けて露天風呂から部屋へ入ったと考えると、畳の上に座椅子が存在しているだろう。加えてもう一つだけ自由入力で指定がする必要がある' },
       { sender: '先輩', text: '救助対象者が現在座っているかは不明だ。当てにはできない。状況から推測して、座椅子に触れているものを自由入力で答えてくれ。イラストに登場している必要はない' }
       ], phase1Complete: false, isCleared: false
@@ -164,6 +163,7 @@ export default function Home() {
   useEffect(() => {
     if (activeTab === 'last_4') {
       setSelectedItem("畳");
+      setLast2Text(""); // 初期値なし
     } else {
       setSelectedItem("");
     }
@@ -330,7 +330,7 @@ export default function Home() {
         } else if (selection === 'ドライヤー_forced') {
           displayItem = 'ドライヤー';
         }
-        if (activeTab !== 'last_4') {
+        if (activeTab !== 'last_4' && activeTab !== 'last_3') {
           addMessage(activeTab, '救助システム', `> アナウンス: ${displayItem}`);
         }
       }
@@ -517,7 +517,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-3 text-lg sm:text-xl font-bold text-neutral-100 font-sans tracking-wider">
-                  <div className="w-[140px] border-b-2 border-cyan-400 pb-1">
+                  <div className="w-[80px] border-b-2 border-cyan-400 pb-1">
                     <CustomSelect
                       value={selectedItem}
                       onChange={setSelectedItem}
@@ -527,18 +527,18 @@ export default function Home() {
                       disabled={true}
                     />
                   </div>
-                  <span>に触れている</span>
-                  <div className="w-[100px] border-b-2 border-cyan-400 pb-1">
+                  <span>と</span>
+                  <div className="w-[120px] border-b-2 border-cyan-400 pb-1">
                     <input
                       type="text"
-                      maxLength={4}
+                      maxLength={10}
                       value={last2Text}
                       onChange={(e) => setLast2Text(e.target.value)}
-                      placeholder="？"
+                      placeholder="自由入力"
                       className="w-full bg-transparent border-none text-center text-cyan-400 focus:outline-none placeholder:text-neutral-700"
                     />
                   </div>
-                  <span>座椅子</span>
+                  <span>に触れている座椅子</span>
                 </div>
 
                 <button
@@ -722,7 +722,22 @@ export default function Home() {
 
                 {/* 質問5 */}
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-300">5. この気温の中、2時間30分経ってもハッキング液が冷めないのはなぜか？</p>
+                  <p className="text-sm text-neutral-300">5. ハッキング液に提出する際のスキャン結果を見ると、ハッキング液はどこにありそうか？</p>
+                  <select
+                    value={reviewAnswers.scan_location}
+                    onChange={(e) => setReviewAnswers(prev => ({ ...prev, scan_location: e.target.value }))}
+                    className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.scan_location === '庭' ? 'border-green-500 text-green-400' : reviewAnswers.scan_location ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
+                  >
+                    <option value="">選択してください</option>
+                    <option value="庭">庭</option>
+                    <option value="風呂場">風呂場</option>
+                    <option value="ベランダ">ベランダ</option>
+                  </select>
+                </div>
+
+                {/* 質問6 */}
+                <div className="space-y-3">
+                  <p className="text-sm text-neutral-300">6. この気温の中、2時間30分経ってもハッキング液が冷めないのはなぜか？</p>
                   <select
                     value={reviewAnswers.item}
                     onChange={(e) => setReviewAnswers(prev => ({ ...prev, item: e.target.value }))}
@@ -735,16 +750,16 @@ export default function Home() {
                   </select>
                 </div>
 
-                {/* 質問6 */}
+                {/* 質問7 */}
                 <div className="space-y-3">
-                  <p className="text-sm text-neutral-300">6. ハッキング液は何に溶けていますか？</p>
+                  <p className="text-sm text-neutral-300">7. ハッキング液は何に溶けていますか？</p>
                   <select
                     value={reviewAnswers.q5}
                     onChange={(e) => setReviewAnswers(prev => ({ ...prev, q5: e.target.value }))}
                     className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.q5 === '温泉' ? 'border-green-500 text-green-400' : reviewAnswers.q5 ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
                   >
                     <option value="">選択してください</option>
-                    <option value="温泉">温泉</option>
+                    <option value="温泉">温泉（露天風呂）</option>
                   </select>
                 </div>
 
@@ -757,7 +772,7 @@ export default function Home() {
                   </button>
                 ) : (
                   <div className="space-y-3 animate-in slide-in-from-top-2 duration-500">
-                    <p className="text-sm text-neutral-300">7. 温泉と温泉饅頭。歯ブラシ、カミソリ、1段の小さい冷蔵庫、浴衣、畳、灰皿...。ここはどういう場所の可能性が高い？</p>
+                    <p className="text-sm text-neutral-300">8. 露天風呂と温泉饅頭。歯ブラシ、カミソリ、1段の小さい冷蔵庫、浴衣、畳、灰皿...。ここはどういう場所の可能性が高い？</p>
                     <select
                       value={reviewAnswers.q6}
                       onChange={(e) => setReviewAnswers(prev => ({ ...prev, q6: e.target.value }))}
@@ -766,24 +781,35 @@ export default function Home() {
                       <option value="">選択してください</option>
                       <option value="自宅">自宅</option>
                       <option value="学校">学校</option>
-                      <option value="旅館">旅館</option>
+                      <option value="旅館">温泉旅館</option>
+                    </select>
+
+                    <p className="text-sm text-neutral-300">9. ハッキング液が窓から出た先にあり、畳やふすまが中にある。温泉旅館の中でもどういう場所か？</p>
+                    <select
+                      value={reviewAnswers.q7}
+                      onChange={(e) => setReviewAnswers(prev => ({ ...prev, q7: e.target.value }))}
+                      className={`w-full bg-black border rounded px-3 py-2 text-sm focus:outline-none transition-colors ${reviewAnswers.q7 === '露天風呂付きの和室（客室）' ? 'border-green-500 text-green-400' : reviewAnswers.q7 ? 'border-red-500 text-red-400' : 'border-neutral-700 text-neutral-400'}`}
+                    >
+                      <option value="">選択してください</option>
+                      <option value="大浴場">大浴場</option>
+                      <option value="露天風呂付きの和室（客室）">露天風呂付きの和室（客室）</option>
                     </select>
                   </div>
                 )}
               </div>
 
-              {reviewAnswers.who === '37' && reviewAnswers.timing === 'STEP2' && reviewAnswers.where === 'お風呂' && reviewAnswers.miss === '8' && reviewAnswers.item === '元々' && reviewAnswers.q5 === '温泉' && reviewAnswers.q6 === '旅館' && (
+              {reviewAnswers.who === '37' && reviewAnswers.timing === 'STEP2' && reviewAnswers.where === 'お風呂' && reviewAnswers.miss === '8' && reviewAnswers.scan_location === '風呂場' && reviewAnswers.item === '元々' && reviewAnswers.q5 === '温泉' && reviewAnswers.q6 === '旅館' && reviewAnswers.q7 === '露天風呂付きの和室（客室）' && (
                 <div className="animate-in zoom-in duration-500 bg-green-900/20 border border-green-500/50 p-4 rounded-lg text-center">
                   <p className="text-green-400 font-bold tracking-widest text-sm">状況整理完了</p>
-                  <p className="text-xs text-neutral-300 mt-2">{unlockedTabs.includes('last_3') ? 'LAST 3' : 'LAST 2'}に戻り、答えを導いてください。</p>
+                  <p className="text-xs text-neutral-300 mt-2">LAST 3に戻り、答えを導いてください。</p>
                 </div>
               )}
               <button
-                onClick={() => setActiveTab(unlockedTabs.includes('last_3') ? 'last_3' : 'last_2')}
+                onClick={() => setActiveTab('last_3')}
                 className="w-full bg-cyan-900/30 text-cyan-400 py-3 rounded font-bold border border-cyan-800 hover:bg-cyan-800/50 hover:text-cyan-100 transition-all text-xs uppercase tracking-[0.2em] mt-10 shadow-[0_0_15px_rgba(8,145,178,0.1)] flex items-center justify-center gap-2"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-                {unlockedTabs.includes('last_3') ? 'LAST 3' : 'LAST 2'}に戻る
+                LAST 3に戻る
               </button>
             </div>
           </div>
@@ -806,7 +832,7 @@ export default function Home() {
             {!state.isCleared && !isInputCollapsed && (
               <>
                 <div className="flex items-center gap-2 px-1 mb-1.5">
-                  {(activeTab === 'last_2' || activeTab === 'last_3') && (
+                  {activeTab === 'last_3' && (
                     <button
                       onClick={() => {
                         if (!unlockedTabs.includes('situation_review')) {
@@ -1190,10 +1216,7 @@ export default function Home() {
       <HintDialog
         hints={(() => {
           const allHints = HINTS[activeTab] || [];
-          if (activeTab === 'last_2' && !unlockedTabs.includes('situation_review')) {
-            // "ここから先は情報整理ボタンを押してから解放される" is at index 4
-            return allHints.slice(0, 5);
-          }
+
           return allHints;
         })()}
         isOpen={showHints}
