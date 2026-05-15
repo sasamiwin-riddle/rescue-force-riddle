@@ -21,7 +21,7 @@ function normalizeString(str: string): string {
 
 // Riddle parts: stepX_1, step0_2
 const RIDDLE_ANSWERS: Record<string, RegExp> = {
-  'step0': /^(ぐらうんど|グラウンド)$/,
+  'step0': /^(ready|READY|レディ|れでぃ)$/,
   'step0_2': /^(赤|あか|アカ)$/,
   'step1_1': /^(s|S|ｓ|Ｓ|えす|エス)$/,
   'step2_1': /^(12|１２|える|エル)$/,

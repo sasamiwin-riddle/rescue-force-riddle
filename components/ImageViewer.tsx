@@ -35,9 +35,6 @@ export function ImageViewer({ step, onImageClick }: ImageViewerProps) {
     case 'last_3':
       imageSrc = "/assets/riddle_last3.png";
       break;
-    case 'last_4':
-      imageSrc = "/assets/clear_item.png";
-      break;
     default:
       imageSrc = "/assets/placeholder.jpg";
   }

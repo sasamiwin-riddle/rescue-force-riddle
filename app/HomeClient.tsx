@@ -13,8 +13,8 @@ const ALL_STEPS: Step[] = ['intro', 'step0', 'step0_2', 'manual', 'step1_1', 'st
 
 const ALL_ITEM_OPTIONS = [
   { value: "灰皿", label: "灰皿", step: 1 },
-  { value: "茶碗", label: "茶碗", step: 1 },
-  { value: "茶筅", label: "茶筅（お茶をかき混ぜる道具）", step: 1 },
+  { value: "湯呑", label: "湯呑", step: 1 },
+  { value: "金庫", label: "金庫", step: 1 },
   { value: "S字フック", label: "S字フック", step: 1 },
   { value: "制服", label: "制服", step: 1 },
   { value: "靴", label: "靴", step: 1 },
@@ -35,7 +35,7 @@ const ALL_ITEM_OPTIONS = [
   { value: "盆", label: "盆", step: 3 },
   { value: "缶", label: "缶", step: 3 },
   { value: "蜘蛛", label: "蜘蛛", step: 3 },
-  { value: "水", label: "水", step: 4 },
+  { value: "ペットボトル", label: "ペットボトル", step: 4 },
   { value: "冷蔵庫", label: "冷蔵庫", step: 4 },
 ];
 
@@ -109,7 +109,7 @@ export default function Home() {
     step1_2: { messages: [{ sender: '先輩', text: 'では「s」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ' }], phase1Complete: true, isCleared: false },
     step2_1: { messages: [{ sender: '先輩', text: 'お見事！この流れの繰り返しだ' }, { sender: '先輩', text: 'ここまで54分、順調だな' }], phase1Complete: false, isCleared: false },
     step2_2: { messages: [{ sender: '先輩', text: 'よし、正解だ！マニュアルの通り、指示がない場合は大文字アルファベットに変換する。アルファベットの12番目「L」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ' }], phase1Complete: true, isCleared: false },
-    step3_1: { messages: [{ sender: '先輩', text: '重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ！' }, { sender: '先輩', text: 'ここまで90分、順調だな' }], phase1Complete: false, isCleared: false },
+    step3_1: { messages: [{ sender: '先輩', text: '固定さえされていなければ、重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ！' }, { sender: '先輩', text: 'ここまで90分、順調だな' }], phase1Complete: false, isCleared: false },
     step3_2: { messages: [{ sender: '先輩', text: '冴えてるね！さあ、「h」のシルエットに最も近いアイテムを登場したイラストの中から選ぼう' }], phase1Complete: true, isCleared: false },
     step4_1: { messages: [{ sender: '先輩', text: 'ここまで120分。いよいよ最後の謎だ' }], phase1Complete: false, isCleared: false },
     step4_2: {
@@ -117,14 +117,14 @@ export default function Home() {
       { sender: '先輩', text: '普段の用途で発生しない形になったり、壊したり分解したりするとアイテムは判定されないから気をつけるんだ' },
       ], phase1Complete: true, isCleared: false
     },
-    last_1: { messages: [{ sender: '先輩', text: 'ここまで144分か。踏ん張りどころだ' }, { sender: '先輩', text: '私の推測だと答えではないと思うが、念のため可能性を潰しておきたい。「ドライヤー」を再度選択してくれ' }], phase1Complete: true, isCleared: false },
+    last_1: { messages: [{ sender: '先輩', text: 'ここまで144分か。踏ん張りどころだ。冷蔵庫を開いた状態よりも「L」に近いアイテム...。金庫は同じ結果だろう。' }, { sender: '先輩', text: '私の推測だと答えではないと思うが、念のため可能性を潰しておきたい。「ドライヤー」を再度選択してくれ' }], phase1Complete: true, isCleared: false },
     last_2: {
       messages: [{ sender: '先輩', text: 'マニュアル2ページ目は申し訳ない。この救助システムのバージョンだと、イラストと実物が異なることを失念していた' },
       { sender: '先輩', text: 'だが、何のアイテムが良いか私はすでに検討がついた。この謎は救助システムから出力された謎に少し書き加えたものだ。私のこの謎を解いて、まずは自分で状況を整理してみてくれ' },
       { sender: '先輩', text: 'この謎は、もしもイラスト数最大10個が適用されていなかった場合、こうだったかもしれないと予測したものだ。謎の緑色の部分が書き加えた部分だ。変化を加えたことで、1つだけより具体的になったイラストの名称を答えてくれ' }], phase1Complete: false, isCleared: false
     },
     last_3: {
-      messages: [{ sender: '先輩', text: 'その通りだ。その根拠がこの上部の資料だ。開いて確認してくれ。一度誤答した際に解放されたスキャン機能だ' },
+      messages: [{ sender: '先輩', text: 'その根拠がこの上部の資料だ（私が表計算ソフトでまとめておいた）。開いて確認してくれ。一度誤答した際に解放された高度なスキャン機能だ' },
       { sender: '先輩', text: '5分間隔で、登場済みイラストのアイテムに触れた順に記録されている。3行目の記録を見ると、アナウンスを受けてハッキング液にアイテムを提出しに行く際、ドアではなく窓から外に出ていそうだ' },
       { sender: '先輩', text: '特徴的な1段式の冷蔵庫、マニュアル液の違和感を振り返ると、閉鎖空間の場所について一つの結論に辿り着いた' },
       { sender: '先輩', text: '閉鎖空間の場所、救助対象者のスキャン結果に着目して、最後のアイテムを選択肢から選び、一発でこれと分かる詳細な名称を推測して答えてくれ。必要であれば「状況整理を行う」と言ってくれ' }], phase1Complete: false, isCleared: false
@@ -216,7 +216,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('rescue-force-progress-v3');
+    const saved = localStorage.getItem('rescue-force-progress-v4');
     if (saved) {
       const data = deobfuscate(saved);
       if (data) {
@@ -243,7 +243,7 @@ export default function Home() {
       reviewAnswers,
       showQ5
     };
-    localStorage.setItem('rescue-force-progress-v3', obfuscate(data));
+    localStorage.setItem('rescue-force-progress-v4', obfuscate(data));
   }, [isInitialized, activeTab, unlockedTabs, gameStarted, stepStates, manual2Unlocked, reviewAnswers, showQ5]);
 
 
@@ -476,7 +476,7 @@ export default function Home() {
       <div className="flex-1 flex flex-col w-full min-h-0">
 
         {/* Riddle Image Section */}
-        {((activeTab === 'step0' || activeTab === 'step0_2' || activeTab.endsWith('_1') || activeTab === 'last_2' || activeTab === 'last_3') && activeTab !== 'last_1' && activeTab !== 'last_4') || (activeTab === 'last_4' && state.isCleared) ? (
+        {((activeTab === 'step0' || activeTab === 'step0_2' || activeTab.endsWith('_1') || activeTab === 'last_2' || activeTab === 'last_3') && activeTab !== 'last_1' && activeTab !== 'last_4') ? (
           expandedClearedImages[activeTab] === false ? (
             <div
               onClick={() => setExpandedClearedImages(prev => ({ ...prev, [activeTab]: true }))}
@@ -772,7 +772,7 @@ export default function Home() {
                   </button>
                 ) : (
                   <div className="space-y-3 animate-in slide-in-from-top-2 duration-500">
-                    <p className="text-sm text-neutral-300">8. 露天風呂と温泉饅頭。歯ブラシ、カミソリ、1段の小さい冷蔵庫、浴衣、畳、灰皿...。ここはどういう場所の可能性が高い？</p>
+                    <p className="text-sm text-neutral-300">8. 露天風呂と温泉饅頭。歯ブラシ、カミソリ、1段の小さい冷蔵庫、浴衣、畳、灰皿、金庫、湯呑...。ここはどういう場所の可能性が高い？</p>
                     <select
                       value={reviewAnswers.q6}
                       onChange={(e) => setReviewAnswers(prev => ({ ...prev, q6: e.target.value }))}
