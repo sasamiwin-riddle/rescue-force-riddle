@@ -27,7 +27,7 @@ const RIDDLE_ANSWERS: Record<string, RegExp> = {
   'step2_1': /^(12|１２|える|エル)$/,
   'step3_1': /^(h|H|ｈ|Ｈ|えいち|エイチ)$/,
   'step4_1': /^(l|L|ｌ|Ｌ|える|エル)$/,
-  'last_2': /^(温泉饅頭|おんせんまんじゅう|オンセンマンジュウ)$/,
+  'last_2': /^(温泉饅頭|おんせんまんじゅう|オンセンマンジュウ|温泉まんじゅう|おんせん饅頭)$/,
 };
 
 export async function validateRiddle(answer: string, currentStep: Step): Promise<ActionResponse> {

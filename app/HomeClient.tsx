@@ -109,7 +109,7 @@ export default function Home() {
     step1_2: { messages: [{ sender: '先輩', text: 'では「s」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ' }], phase1Complete: true, isCleared: false },
     step2_1: { messages: [{ sender: '先輩', text: 'お見事！この流れの繰り返しだ' }, { sender: '先輩', text: 'ここまで54分、順調だな' }], phase1Complete: false, isCleared: false },
     step2_2: { messages: [{ sender: '先輩', text: 'よし、正解だ！マニュアルの通り、指示がない場合は大文字アルファベットに変換する。アルファベットの12番目「L」のシルエットに最も近いアイテムを登場したイラストの中から選んで送信してくれ' }], phase1Complete: true, isCleared: false },
-    step3_1: { messages: [{ sender: '先輩', text: '固定さえされていなければ、重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ！' }, { sender: '先輩', text: 'ここまで90分、順調だな' }], phase1Complete: false, isCleared: false },
+    step3_1: { messages: [{ sender: '先輩', text: '固定さえされていなければ、重いアイテムでも運べる機能が解放された。マニュアルにも追加されているから確認しておいてくれ' }, { sender: '先輩', text: 'あ、固定されて運べないものは選択肢に出ないから安心してくれ' }, { sender: '先輩', text: 'ここまで90分、順調だな' }], phase1Complete: false, isCleared: false },
     step3_2: { messages: [{ sender: '先輩', text: '冴えてるね！さあ、「h」のシルエットに最も近いアイテムを登場したイラストの中から選ぼう' }], phase1Complete: true, isCleared: false },
     step4_1: { messages: [{ sender: '先輩', text: 'ここまで120分。いよいよ最後の謎だ' }], phase1Complete: false, isCleared: false },
     step4_2: {
