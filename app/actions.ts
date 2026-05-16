@@ -51,7 +51,7 @@ export async function validateRiddle(answer: string, currentStep: Step): Promise
     }
 
     let successMessage = '正解です。該当するアイテムを選択してください';
-    if (currentStep === 'step0') successMessage = '閉鎖空間内にハッキング液が用意できました';
+    if (currentStep === 'step0') successMessage = '閉鎖空間内にハッキング液を作成可能な場所を見つけました';
 
     return {
       success: true,
